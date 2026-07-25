@@ -1,9 +1,12 @@
-import Navbar from "./component/Navbar";
+import { Header } from "./layout";
+import { Navbar } from "./component/Navbar";
 
 export default function Home() {
   return (
-    <div>
+    <div className="h-screen">
+      <Header />
       <Navbar />
     </div>
   );
 }
+
