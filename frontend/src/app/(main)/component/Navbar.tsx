@@ -51,7 +51,7 @@ export function Navbar () {
     )
 
     return (
-        <aside className={`relative h-full bg-gray-900 text-gray-200 flex flex-col transition-[width] duration-1000 ease-in-out
+        <aside className={`relative h-full bg-gray-900 text-gray-200 flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
                 ${fold ? 'w-15' : 'w-55'
                 }`
             }
