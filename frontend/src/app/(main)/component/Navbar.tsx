@@ -1,6 +1,7 @@
 'use client'
 
 import { useSidebar } from "../context/SidebarContext";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     Home,
@@ -25,6 +26,30 @@ const menuButton = [
 
 export function Navbar () {
     const { fold, setFold  } = useSidebar();
+    const [ user, setUser ] = useState(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (res.ok) {
+                    const userData = await res.json();
+                    setUser(userData);
+                } else {
+                    setUser(null);
+                }
+
+            } catch (err) {
+                setUser(null);
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     const renderMenu = (items: typeof menuTop) => (
         <nav className="flex flex-col">
