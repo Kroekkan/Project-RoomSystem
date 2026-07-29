@@ -10,6 +10,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Settings,
+    LogIn,
     LogOut,
 } from "lucide-react";
 
@@ -99,11 +100,32 @@ export function Navbar () {
 
             {renderMenu(menuTop)}
 
-            <div className="flex flex-col mt-auto mb-4">
-                
-                {renderMenu(menuButton)}
+            {user 
+                ?
+                <div className="flex flex-col mt-auto mb-4">
+                    
+                    {renderMenu(menuButton)}
 
-            </div>
+                </div>
+                :
+                <div className="flex flex-col mt-auto mb-6 px-2">
+                    <Link
+                        key={"login"}
+                        href={'/Login'}
+                        className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-sky-600 rounded-lg hover:bg-white hover:text-black transition-colors duration-500 relative group overflow-hidden"
+                    >
+                        <LogIn size={25} className="shrink-0 my-1 " />
+                        <span
+                            className={`text-xl font-medium whitespace-nowrap transition-all duration-700 ease-in-out
+                                ${fold? 'opacity-0 w-0 -translate-x-2' : 'opacity-100 w-auto translate-x-0'}
+                                `}
+                        >
+                            เข้าสู้ระบบ
+                        </span>
+                    </Link>
+                </div>
+            }
+
 
         </aside>
     )
