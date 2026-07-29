@@ -7,14 +7,12 @@ import Swal from "sweetalert2"
 export default function Login () {
     const [ email, setEmail ] = useState("");
     const [ password, setPassword ] = useState("");
-    const [ error, setError ] = useState('');
     const [ loading, setLoading ] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
@@ -44,8 +42,15 @@ export default function Login () {
                     
 
         } catch (err: any) {
+            const errorMessage = err.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
 
-            setError(err.message);
+            await Swal.fire({
+                title: "เกิดข้อมูลผิดพลาด",
+                text: errorMessage,
+                icon: "error",
+                confirmButtonColor: "#4f46e5",
+            });
+            
 
         } finally {
             
@@ -82,7 +87,6 @@ export default function Login () {
             <button type="submit">
                 {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
             </button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <button onClick={() => router.push('/Register')}>
                 ลงทะเบียน

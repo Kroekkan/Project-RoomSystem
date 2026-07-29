@@ -9,13 +9,11 @@ export default function Register () {
     const [ password, setPassword ] = useState("");
     const [ surepassword, setSurePassword ] = useState("");
     const [ loading, setLoading ] = useState(false);
-    const [ error, setError ] = useState('');;
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         if ( password !== surepassword ) {
             setLoading(false);
@@ -51,13 +49,19 @@ export default function Register () {
                 scrollbarPadding: false,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    router.replace('/');
+                    router.replace('/Login');
                 }
             })
 
         } catch (err: any) {
+            const errorMessage = err.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
 
-            setError(err.message);
+            await Swal.fire({
+                title: "เกิดข้อมูลผิดพลาด",
+                text: errorMessage,
+                icon: "error",
+                confirmButtonColor: "#4f46e5",
+            });
 
         } finally {
 
@@ -100,7 +104,6 @@ export default function Register () {
             <button type="submit" disabled={loading}>
                 {loading ? "กำลังสร้างบัญชี..." : "สร้างบัญชี"}
             </button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <button onClick={() => router.push('/Login')}>
                 เข้าสู่ระบบ

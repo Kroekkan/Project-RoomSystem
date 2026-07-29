@@ -52,6 +52,8 @@ export function Navbar () {
         checkAuth();
     }, []);
 
+    console.log(user);
+
     const renderMenu = (items: typeof menuTop) => (
         <nav className="flex flex-col">
                 {items.map((item) => {
@@ -112,7 +114,7 @@ export function Navbar () {
                     <Link
                         key={"login"}
                         href={'/Login'}
-                        className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-sky-600 rounded-lg hover:bg-white hover:text-black transition-colors duration-500 relative group overflow-hidden"
+                        className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-sky-600 rounded-lg hover:bg-white hover:text-black transition-colors duration-700 relative group overflow-hidden"
                     >
                         <LogIn size={25} className="shrink-0 my-1 " />
                         <span
