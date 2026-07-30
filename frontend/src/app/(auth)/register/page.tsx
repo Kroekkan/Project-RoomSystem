@@ -72,7 +72,14 @@ export default function Register () {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form 
+            onSubmit={handleSubmit}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            }}
+        >
             <button onClick={() => router.push('/')}>
                 กลับ
             </button>

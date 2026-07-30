@@ -28,17 +28,18 @@ export default function Login () {
                 throw new Error(errData.message || 'Failed to Login');
             }
 
-            const result = await Swal.fire({
+            router.replace('/');
+
+            await Swal.fire({
                 title: 'สำเร็จ',
                 text: 'เข้าสู่ระบบสำเร็จ',
                 icon: 'success',
                 confirmButtonText: 'ตกลง',
                 confirmButtonColor: '#00aeff',
+                heightAuto: false,
             });
             
-            if (result.isConfirmed) {
-                router.replace('/');
-            }
+            
                     
 
         } catch (err: any) {
@@ -48,7 +49,7 @@ export default function Login () {
                 title: "เกิดข้อมูลผิดพลาด",
                 text: errorMessage,
                 icon: "error",
-                confirmButtonColor: "#4f46e5",
+                confirmButtonColor: "#00aeff",
             });
             
 
@@ -61,7 +62,14 @@ export default function Login () {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form 
+            onSubmit={handleSubmit}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            }}
+        >
             <button onClick={() => router.push('/')}>
                 กลับ
             </button>
