@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 
 interface User {
     id: Number;
+    name: String;
     email: String;
+    branch: String;
     role?: String;
 }
 

@@ -91,11 +91,11 @@ export function Navbar() {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col mt-auto mb-4 px-2">
+        <div className="flex flex-col mt-auto mb-6 px-2">
           <Link
             key={"login"}
             href={"/Login"}
-            className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-sky-600 rounded-lg hover:bg-white hover:text-black transition-colors duration-700 relative group overflow-hidden"
+            className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-blue-500 shadow-lg shadow-blue-500/50 rounded-lg hover:bg-white hover:text-black transition-colors duration-700 relative group overflow-hidden"
           >
             <LogIn size={25} className="shrink-0 my-1 " />
             <span

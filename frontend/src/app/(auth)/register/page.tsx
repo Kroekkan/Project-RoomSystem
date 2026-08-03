@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
 export default function Register () {
+    const [ name, setName ] = useState("");
     const [ email, setEmail ] = useState("");
     const [ password, setPassword ] = useState("");
     const [ surepassword, setSurePassword ] = useState("");
+    const [ branch, setBranch ] = useState("");
     const [ loading, setLoading ] = useState(false);
     const router = useRouter();
 
@@ -32,7 +34,7 @@ export default function Register () {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/create`, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ name, email, password, branch }),
             });
 
             if (!res.ok) {
@@ -85,6 +87,14 @@ export default function Register () {
             </button>
 
             <input 
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ชื่อ-นามสกุล"
+                required
+            />
+
+            <input 
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -105,6 +115,14 @@ export default function Register () {
                 value={surepassword}
                 onChange={(e) => setSurePassword(e.target.value)}
                 placeholder="ยีนยันรหัสผ่าน"
+                required
+            />
+
+            <input 
+                type="text"
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                placeholder="หมวด/สาขา"
                 required
             />
 

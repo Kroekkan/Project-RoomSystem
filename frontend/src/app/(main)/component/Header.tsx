@@ -19,7 +19,7 @@ export function Header() {
     ) : user 
             ?
             <div className="flex">
-                <h2 className="text-white text-lg  font-bold mx-4">{user?.email ? user.email.split('@')[0] : "ผู้ใช้งาน"}</h2>
+                <h2 className="text-white text-lg  font-bold mx-4">{user.name}</h2>
 
                 <button 
                   onClick={handleLogout}
@@ -33,7 +33,7 @@ export function Header() {
                 <Link
                     key={"login"}
                     href={'/Login'}
-                    className="flex gap-3 p-2 bg-sky-600 text-white hover:bg-white hover:text-black rounded-xl transition-colors duration-700"
+                    className="flex gap-3 p-2 bg-blue-500 shadow-lg shadow-blue-500/50 text-white hover:bg-white hover:text-black rounded-xl transition-colors duration-700"
                 >
                     <LogIn />
                     <h2>เข้าสู่ระบบ</h2>
