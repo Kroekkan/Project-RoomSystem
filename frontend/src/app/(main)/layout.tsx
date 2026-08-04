@@ -1,6 +1,6 @@
-import { Navbar } from "../(main)/component/Navbar";
-import { Header } from "../(main)/component/Header";
-import { SidebarProvider } from "../(main)/context/SidebarContext";
+import { Navbar } from "./component/Navbar";
+import { Header } from "./component/Header";
+import { SidebarProvider } from "./context/SidebarContext";
 
 export default function MainLayout({
   children,
