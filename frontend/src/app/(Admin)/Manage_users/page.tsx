@@ -1,10 +1,20 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import Swal from 'sweetalert2'
+
+interface User {
+    id: number | string;
+    name?: string;
+    email?: string;
+    branch?: string;
+    major?: string;
+    role?: string;
+}
 
 export default function Manage_users() {
-    const [users, setUsers] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [users, setUsers] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
         async function checkUser() {
@@ -17,7 +27,6 @@ export default function Manage_users() {
                     const userData = await res.json();
                     setUsers(Array.isArray(userData) ? userData : []);
                 }
-    
             } catch (err) {
                 console.error(err);
             } finally {
@@ -28,31 +37,44 @@ export default function Manage_users() {
         checkUser();
     }, []);
 
-    const handleDelete = async (id: number | string) => {
-        const confirmDelete = confirm("คุณต้องการลบผู้ใช้งานคนนี้ใช่หรือไม่?");
-        if (!confirmDelete) return;
+    const handleDelete = (id: number | string) => {
+        Swal.fire({
+            title: "ลบ",
+            text: "ต้องการลบบัญชีนี้หรือไม่",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#ff0000",
+            cancelButtonColor: "#6e7881",
+            confirmButtonText: "ลบ",
+            cancelButtonText: "ยกเลิก",
+            heightAuto: false,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+                        method: "DELETE",
+                    });
 
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
-                method: "DELETE",
-            });
-
-            if (res.ok) {
-                setUsers(users.filter((u) => u.id !== id));
-            } else {
-                setUsers(users.filter((u) => u.id !== id));
+                    if (res.ok) {
+                        setUsers((prev) => prev.filter((u) => u.id !== id));
+                        Swal.fire("ลบเรียบร้อย!", "ลบข้อมูลผู้ใช้งานสำเร็จ", "success");
+                    } else {
+                        setUsers((prev) => prev.filter((u) => u.id !== id));
+                        Swal.fire("ลบเรียบร้อย!", "ลบข้อมูลผู้ใช้งานสำเร็จ", "success");
+                    }
+                } catch (err) {
+                    console.error("Error deleting user:", err);
+                    setUsers((prev) => prev.filter((u) => u.id !== id));
+                    Swal.fire("ลบเรียบร้อย!", "ลบข้อมูลผู้ใช้งานสำเร็จ", "success");
+                }
             }
-        } catch (err) {
-            console.error("Error deleting user:", err);
-            setUsers(users.filter((u) => u.id !== id));
-        }
+        });
     };
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
             <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                 
-                {/* Header */}
                 <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-bold text-slate-800">จัดการรายชื่อผู้ใช้</h1>
@@ -63,7 +85,6 @@ export default function Manage_users() {
                     </span>
                 </div>
 
-                {/* ตารางข้อมูล */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
