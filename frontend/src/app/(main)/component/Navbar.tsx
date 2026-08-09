@@ -28,7 +28,6 @@ export function Navbar() {
   const { user, isLoading } = useAuth();
   const { handleLogout } = useLogout();
 
-
   const renderMenu = (items: typeof menuTop) => (
     <nav className="flex flex-col">
       {items.map((item) => {
