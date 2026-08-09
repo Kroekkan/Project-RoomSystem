@@ -20,7 +20,7 @@ import {
 const menuTop = [
   { name: "หน้าแรก", icon: Home, href: "/admin" },
   { name: "ตาราง", icon: Columns3Cog, href: "/Roombooking_Admin"},
-  { name: "ประชาสัมพันธ์", icon: Megaphone, href: "/Public_realtions_Admin" },
+  { name: "ประชาสัมพันธ์", icon: Megaphone, href: "/Public_relations_Admin" },
   { name: "จัดการผู้ใช้", icon: CircleUserRound, href: "/Manage_users"},
 ];
 

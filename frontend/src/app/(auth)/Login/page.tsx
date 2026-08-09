@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
+import { jwtVerify } from "jose"
 
 export default function Login () {
     const [ email, setEmail ] = useState("");
@@ -22,13 +23,21 @@ export default function Login () {
                 body: JSON.stringify({ email, password }),
             });
 
-            
+            const data = await res.json();
+
             if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Failed to Login');
+                throw new Error(data.message || 'Failed to Login');
             }
 
-            router.replace('/');
+            const role = data.role;
+
+            if (role === 'USER') {
+                router.replace('/');
+            } else if (role === 'ADMIN') {
+                router.replace('/admin');
+            } else {
+                throw new Error("ไม่พบ Role ของผู้ใช้งาน");
+            }
 
             await Swal.fire({
                 title: 'สำเร็จ',

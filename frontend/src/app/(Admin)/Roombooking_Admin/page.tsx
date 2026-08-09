@@ -246,7 +246,7 @@ export default function SchedulePage() {
 
             <aside className="w-72 h-169 bg-white border-l border-slate-200 flex flex-col shrink-0 order-2">
                 <div className="px-5 py-4 border-b border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-800">🏫 รายชื่อห้อง</h2>
+                    <h2 className="text-lg font-bold text-slate-800">รายชื่อห้อง</h2>
                     <p className="text-xs text-slate-400 mt-0.5">ทั้งหมด {rooms.length} ห้อง</p>
                 </div>
 
@@ -284,7 +284,7 @@ export default function SchedulePage() {
                                             ? 'bg-indigo-500 text-white'
                                             : 'bg-slate-100 text-slate-500'
                                     }`}>
-                                        {room.name.slice(0, 2)}
+                                        {room.name.slice(0, 1)}
                                     </div>
                                     <div>
                                         <div className={`text-sm font-semibold ${selectedRoom?.id === room.id ? 'text-indigo-700' : 'text-slate-700'}`}>
@@ -328,7 +328,7 @@ export default function SchedulePage() {
 
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold text-slate-800">
-                            📅 {selectedRoom ? `ตารางสอน — ${selectedRoom.name}` : 'ตารางสอน'}
+                            {selectedRoom ? `ตารางสอน — ${selectedRoom.name}` : 'ตารางสอน'}
                         </h1>
                         <p className="text-sm text-slate-500 mt-1">
                             {selectedRoom ? 'คลิกที่ช่องเพื่อจัดการคาบเรียน' : 'เลือกห้องจากแถบด้านซ้ายเพื่อเริ่มต้น'}
@@ -391,14 +391,14 @@ export default function SchedulePage() {
                                                                 onClick={() => handleCellClick(day, p)}
                                                             >
                                                                 {isLunchBreak ? (
-                                                                    <div className="text-[10px] text-amber-400 font-medium py-4">🍽️ พัก</div>
+                                                                    <div className="text-[10px] text-amber-400 font-medium py-4">พัก</div>
                                                                 ) : item ? (
                                                                     <div className={`rounded-xl border px-2 py-2.5 ${colorClass} transition-all duration-200 ${
                                                                         isHovered ? 'scale-[1.04] shadow-md ring-2 ring-indigo-300/40' : 'shadow-sm'
                                                                     }`}>
                                                                         <div className="font-bold text-xs leading-tight truncate">{item.subject}</div>
                                                                         <div className="text-[10px] mt-1 opacity-70 truncate">{item.teacher}</div>
-                                                                        <div className="text-[10px] mt-0.5 opacity-60">🏫 {item.classroom}</div>
+                                                                        <div className="text-[10px] mt-0.5 opacity-60">{item.classroom}</div>
                                                                     </div>
                                                                 ) : (
                                                                     <div className={`py-4 transition-all duration-200 rounded-xl ${
