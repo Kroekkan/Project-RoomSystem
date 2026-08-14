@@ -20,7 +20,7 @@ type DaySchedule = { [period: number]: ScheduleItem | null };
 type ScheduleData = { [day: string]: DaySchedule };
 
 const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
-const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const dayColors: { [k: string]: string } = {
     "จันทร์": "bg-yellow-400", "อังคาร": "bg-pink-400", "พุธ": "bg-green-400",
