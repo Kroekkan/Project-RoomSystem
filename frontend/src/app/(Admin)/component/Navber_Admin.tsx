@@ -15,6 +15,7 @@ import {
   LogOut,
   CircleUserRound,
   MoveLeft,
+  Warehouse,
 } from "lucide-react";
 
 const menuTop = [
@@ -22,6 +23,7 @@ const menuTop = [
   { name: "ตาราง", icon: Columns3Cog, href: "/Roombooking_Admin"},
   { name: "ประชาสัมพันธ์", icon: Megaphone, href: "/Public_relations_Admin" },
   { name: "จัดการผู้ใช้", icon: CircleUserRound, href: "/Manage_users"},
+  { name: "จัดการการจอง", icon: Warehouse, href: "/Manage_rooms"},
 ];
 
 const menuButton = [

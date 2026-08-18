@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Plush & Play",
+  title: "Roomify",
   description: "Online Doll Shop",
 };
 
