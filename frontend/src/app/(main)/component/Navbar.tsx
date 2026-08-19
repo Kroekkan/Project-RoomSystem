@@ -13,6 +13,7 @@ import {
   Settings,
   LogIn,
   LogOut,
+  MoveRight,
 } from "lucide-react";
 
 const menuTop = [
@@ -21,6 +22,7 @@ const menuTop = [
   { name: "ประชาสัมพันธ์", icon: Megaphone, href: "/Public_relations" },
 ];
 
+const adminMenu = [{ name: "หน้า Admin", icon: MoveRight, href: "/admin",}];
 const menuButton = [{ name: "ตั้งค่า", icon: Settings, href: "/Setting" }];
 
 export function Navbar() {
@@ -74,6 +76,8 @@ export function Navbar() {
         <></>
       ) : user ? (
         <div className="flex flex-col mt-auto mb-4">
+          {user.role === "ADMIN" && renderMenu(adminMenu)}
+
           {renderMenu(menuButton)}
 
           <button
@@ -81,11 +85,16 @@ export function Navbar() {
             className="flex items-center gap-4 top-3 text-gray-400 px-3 py-3 rounded-lg hover:bg-gray-800 hover:text-white transition-colors duration-500 relative group overflow-hidden"
           >
             <LogOut size={25} className="shrink-0 my-1" />
+
             <span
-            className={`text-xl font-medium whitespace-nowrap transition-all duration-700 ease-in-out
-                                    ${fold ? "opacity-0 w-0 -translate-x-2" : "opacity-100 w-auto translate-x-0"}
-                                    `}>
-                ออกจาหระบบ
+              className={`text-xl font-medium whitespace-nowrap transition-all duration-700 ease-in-out
+                ${
+                  fold
+                    ? "opacity-0 w-0 -translate-x-2"
+                    : "opacity-100 w-auto translate-x-0"
+                }`}
+            >
+              ออกจากระบบ
             </span>
           </button>
         </div>

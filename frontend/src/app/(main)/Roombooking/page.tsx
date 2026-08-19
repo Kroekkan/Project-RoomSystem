@@ -36,6 +36,12 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
 const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const time = ["8:30-9:20", "9:20-10:10", "10:10-10:40", "10:40-11:30", "11:30-12:20", 
+    "12:20-13:10", "13:10-14:00", "14:00-14:50", "14:50-15:40", "15:40-16:30"
+]
+const Shortentime = ["8:30-9:10", "9:10-9:50", "9:50-10:20", "10:20-11:00", "11:00-11:40", 
+    "11:40-12:20", "12:20-13:00", "13:00-13:40", "13:40-14:20", "14:20-15:00"
+]
 
 function getMonday(d: Date): Date {
   const date = new Date(d);
@@ -461,9 +467,11 @@ export default function UserBookingPage() {
               <thead>
                 <tr>
                   <th className="bg-slate-800 text-white px-4 py-3 text-sm font-semibold w-28 text-center sticky left-0 z-10">วัน / คาบ</th>
-                  {periods.map(p => (
+                  {periods.map((p, inx) => (
                     <th key={p} className="bg-slate-800 text-white px-2 py-3 text-center text-xs font-semibold min-w-[95px]">
                       <div>{getPeriodTitle(p)}</div>
+                      <div className="mt-1">{time[inx]}</div>
+                      <div className="mt-1">{Shortentime[inx]}</div>
                     </th>
                   ))}
                 </tr>

@@ -14,6 +14,16 @@ import {
   UserCheck
 } from "lucide-react";
 
+// 🟢 1. ขยาย Type ของ User ให้รองรับ picture
+interface UserWithPicture {
+  id?: number | string;
+  name?: string;
+  email?: string;
+  branch?: string;
+  role?: string;
+  picture?: string;
+}
+
 interface Booking {
   id: number;
   roomId: number;
@@ -27,18 +37,20 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export function Person() {
   const { user } = useAuth();
+  // 🟢 แปลงชนิดข้อมูลเป็น UserWithPicture เพื่อให้เข้าถึง picture ได้อย่างปลอดภัย
+  const currentUser = user as UserWithPicture | null;
+
   const [filterType, setFilterType] = useState<'WEEK' | 'MONTH'>('WEEK');
   const [bookingsData, setBookingsData] = useState<Booking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN';
 
-  // 🟢 ดึงข้อมูล: ถ้าเป็น ADMIN ดึง /bookings (ทั้งหมด) | ถ้าเป็น USER ดึง /bookings/user/:id (เฉพาะตัวเอง)
   useEffect(() => {
-    if (!user?.id) return;
+    if (!currentUser?.id) return;
     setIsLoadingBookings(true);
 
-    const fetchUrl = isAdmin ? `${API}/bookings` : `${API}/bookings/user/${user.id}`;
+    const fetchUrl = isAdmin ? `${API}/bookings` : `${API}/bookings/user/${currentUser.id}`;
 
     fetch(fetchUrl)
       .then((res) => (res.ok ? res.json() : []))
@@ -47,9 +59,8 @@ export function Person() {
       })
       .catch((err) => console.error("Fetch bookings for chart error:", err))
       .finally(() => setIsLoadingBookings(false));
-  }, [user?.id, isAdmin]);
+  }, [currentUser?.id, isAdmin]);
 
-  // 📊 คำนวณสถิติแบ่งตามห้อง (สัปดาห์ / เดือน)
   const chartData = useMemo(() => {
     const now = new Date();
     
@@ -88,7 +99,7 @@ export function Person() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
       
-      {/* 👤 การ์ดที่ 1: ข้อมูลผู้ใช้งาน (Profile Card) */}
+      {/* 👤 การ์ดที่ 1: ข้อมูลส่วนตัว (Profile Card) */}
       <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
 
@@ -99,20 +110,29 @@ export function Person() {
               isAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
             }`}>
               <ShieldCheck className="w-3.5 h-3.5" />
-              {user?.role || 'USER'}
+              {currentUser?.role || 'USER'}
             </span>
           </div>
 
-          {/* รูปโปรไฟล์ */}
+          {/* 🟢 ส่วนแสดงรูปโปรไฟล์ที่แก้ไข Error แล้ว */}
           <div className="flex flex-col items-center text-center">
             <div className="relative group">
+              {currentUser?.picture ? (
+                <img 
+                  src={currentUser.picture} 
+                  alt={currentUser.name ? String(currentUser.name) : 'User Avatar'} 
+                  className="w-28 h-28 rounded-full object-cover ring-4 ring-slate-100 shadow-md transition-transform group-hover:scale-105"
+                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                />
+              ) : (
                 <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 ring-4 ring-indigo-50">
                   <CircleUserRound size={68} strokeWidth={1.5} />
                 </div>
+              )}
             </div>
 
-            <h2 className="text-xl font-bold text-slate-800 mt-4">{user?.name || 'ผู้ใช้งาน'}</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{user?.email || '-'}</p>
+            <h2 className="text-xl font-bold text-slate-800 mt-4">{currentUser?.name || 'ผู้ใช้งาน'}</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{currentUser?.email || '-'}</p>
           </div>
 
           <div className="mt-6 space-y-3 border-t border-slate-100 pt-5">
@@ -121,7 +141,7 @@ export function Person() {
                 <Mail className="w-4 h-4 text-indigo-500" />
                 <span>อีเมล</span>
               </div>
-              <span className="text-xs font-semibold text-slate-800 truncate max-w-[180px]">{user?.email || '-'}</span>
+              <span className="text-xs font-semibold text-slate-800 truncate max-w-[180px]">{currentUser?.email || '-'}</span>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
@@ -129,7 +149,7 @@ export function Person() {
                 <Building2 className="w-4 h-4 text-emerald-500" />
                 <span>หมวด / สาขา</span>
               </div>
-              <span className="text-xs font-semibold text-slate-800">{user?.branch || '-'}</span>
+              <span className="text-xs font-semibold text-slate-800">{currentUser?.branch || '-'}</span>
             </div>
           </div>
         </div>
