@@ -173,6 +173,21 @@ export default function AdminBookingManagementPage() {
   const rejectedCount = bookings.filter(b => b.status === 'REJECTED').length;
   const cancelledCount = bookings.filter(b => b.status === 'CANCELLED').length; // 🟢 นับจำนวนรายการที่ยกเลิกแล้ว
 
+  const handleViewFullPurpose = (userName: string, purpose: string) => {
+    Swal.fire({
+      title: 'วัตถุประสงค์การจอง',
+      html: `
+        <div style="text-align:left; font-size:14px; line-height:1.6;">
+          <p style="color:#64748b; font-size:12px; margin-bottom:8px;">ผู้ขอจอง: <strong>${userName}</strong></p>
+          <p style="white-space:pre-wrap; word-break:break-word;">${purpose || '-'}</p>
+        </div>
+      `,
+      confirmButtonText: 'ปิด',
+      confirmButtonColor: '#4f46e5',
+      heightAuto: false,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -331,8 +346,17 @@ export default function AdminBookingManagementPage() {
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-slate-700 max-w-xs">
-                        <p className="truncate font-medium">{item.purpose || '-'}</p>
+                      <td className="px-5 py-4 text-slate-700 max-w-[140px]">
+                        <div className="flex items-center gap-2">
+                          {item.purpose && item.purpose.length > 25 && (
+                            <button
+                              onClick={() => handleViewFullPurpose(item.userName, item.purpose)}
+                              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
+                            >
+                              ดูวัตถุประสงค์
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-5 py-4 text-xs text-slate-600 space-y-0.5">

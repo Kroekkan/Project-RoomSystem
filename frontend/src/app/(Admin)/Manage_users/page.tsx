@@ -52,8 +52,17 @@ export default function Manage_users() {
                   <input id="swal-edit-email" class="swal2-input !m-0 !w-full text-sm" value="${user.email || ''}" placeholder="example@mail.com">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">สาขาวิชา</label>
-                  <input id="swal-edit-branch" class="swal2-input !m-0 !w-full text-sm" value="${user.branch || user.major || ''}" placeholder="เช่น เทคโนโลยีสารสนเทศ">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">สาขาวิชา</label>
+                    <select id="swal-edit-branch" class="swal2-select !m-0 !w-full text-sm">
+                    <option >${user.branch}</option>
+                    <option value="การบัญชี">การบัญชี</option>
+                    <option value="คอมพิวเตอร์ธุรกิจ">คอมพิวเตอร์ธุรกิจ</option>
+                    <option value="คอมพิวเตอร์กราฟิกฯ">คอมพิวเตอร์กราฟิกฯ</option>
+                    <option value="การตลาด">การตลาด</option>
+                    <option value="การจัดการโลจิสติกส์">การจัดการโลจิสติกส์</option>
+                    <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                    <option value="สามัญแกนธุรกิจ">สามัญแกนธุรกิจ</option>
+                    </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-700 mb-1">สิทธิ์การใช้งาน (Role)</label>
@@ -96,7 +105,9 @@ export default function Manage_users() {
                     prev.map((u) => (u.id === user.id ? { ...u, ...formValues } : u))
                 );
 
-                Swal.fire({ title: "แก้ไขข้อมูลสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
+                await Swal.fire({ title: "แก้ไขข้อมูลสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
+
+                window.location.reload();
             } catch (err) {
                 console.error("Error updating user:", err);
                 setUsers((prev) =>
@@ -224,7 +235,7 @@ export default function Manage_users() {
                             <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                 <th className="px-6 py-4">ชื่อ-นามสกุล</th>
                                 <th className="px-6 py-4">อีเมล</th>
-                                <th className="px-6 py-4">สาขาวิชา</th>
+                                <th className="px-6 py-4">แผนก / สาขา</th>
                                 <th className="px-6 py-4 text-center">สิทธิ์การใช้งาน</th>
                                 <th className="px-6 py-4 text-center">จัดการ</th>
                             </tr>

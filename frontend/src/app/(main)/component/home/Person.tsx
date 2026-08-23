@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/app/hooks/useAuth";
+import Swal from "sweetalert2";
 import { 
   CircleUserRound, 
   Mail, 
@@ -96,6 +97,83 @@ export function Person() {
 
   const totalFilteredBookings = chartData.reduce((acc, curr) => acc + curr.count, 0);
 
+  const handleEditProfile = async () => {
+  if (!currentUser) return;
+
+  const { value: formValues } = await Swal.fire({
+    title: 'แก้ไขข้อมูลส่วนตัว',
+    html: `
+        <div class="text-left space-y-3 p-1">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล <span class="text-rose-500">*</span></label>
+            <input id="swal-edit-name" class="swal2-input !m-0 !w-full text-sm" value="${currentUser.name || ''}" placeholder="เช่น สมชาย ใจดี">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">สาขาวิชา</label>
+            <select id="swal-edit-branch" class="swal2-select !m-0 !w-full text-sm">
+              <option >${currentUser.branch}</option>
+              <option value="การบัญชี">การบัญชี</option>
+              <option value="คอมพิวเตอร์ธุรกิจ">คอมพิวเตอร์ธุรกิจ</option>
+              <option value="คอมพิวเตอร์กราฟิกฯ">คอมพิวเตอร์กราฟิกฯ</option>
+              <option value="การตลาด">การตลาด</option>
+              <option value="การจัดการโลจิสติกส์">การจัดการโลจิสติกส์</option>
+              <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+              <option value="สามัญแกนธุรกิจ">สามัญแกนธุรกิจ</option>
+            </select>
+          </div>
+        </div>
+      `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#4f46e5',
+    heightAuto: false,
+    preConfirm: () => {
+      const name = (document.getElementById('swal-edit-name') as HTMLInputElement).value.trim();
+      const branch = (document.getElementById('swal-edit-branch') as HTMLInputElement).value.trim();
+
+      if (!name) {
+        Swal.showValidationMessage('กรุณากรอกชื่อ-นามสกุล');
+        return;
+      }
+      return { name, branch };
+    },
+  });
+
+  if (!formValues) return;
+
+  try {
+    const res = await fetch(`${API}/users/${currentUser.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // ใช้ httpOnly cookie ตามระบบ auth เดิม
+      body: JSON.stringify(formValues),
+    });
+
+    if (!res.ok) throw new Error('อัปเดตข้อมูลล้มเหลว');
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'บันทึกสำเร็จ',
+      text: 'ข้อมูลของคุณถูกอัปเดตแล้ว',
+      timer: 1500,
+      showConfirmButton: false,
+      heightAuto: false,
+    });
+
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    Swal.fire({
+      icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: 'ไม่สามารถอัปเดตข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+      heightAuto: false,
+    });
+  }
+};
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
       
@@ -106,12 +184,24 @@ export function Person() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">ข้อมูลส่วนตัว</span>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
-              isAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
-            }`}>
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {currentUser?.role || 'USER'}
-            </span>
+            <div className="flex">
+              <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                isAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
+              }`}>
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {currentUser?.role || 'USER'}
+              </span>
+              
+              <button
+                onClick={() => handleEditProfile()}
+                className="px-3 py-1 rounded-full text-ms font-bold flex items-center gap-1.5 bg-sky-100 text-sky-700 ml-3 hover:bg-sky-200"
+                >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                แก้ไข
+              </button>
+            </div>
           </div>
 
           {/* 🟢 ส่วนแสดงรูปโปรไฟล์ที่แก้ไข Error แล้ว */}
@@ -147,7 +237,7 @@ export function Person() {
             <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
               <div className="flex items-center gap-2.5 text-xs text-slate-600 font-medium">
                 <Building2 className="w-4 h-4 text-emerald-500" />
-                <span>หมวด / สาขา</span>
+                <span>แผนก / สาขา</span>
               </div>
               <span className="text-xs font-semibold text-slate-800">{currentUser?.branch || '-'}</span>
             </div>

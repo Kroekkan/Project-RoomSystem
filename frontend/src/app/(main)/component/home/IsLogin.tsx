@@ -3,8 +3,7 @@
 import { useAuth } from "@/app/hooks/useAuth";
 import { Person } from "./Person";
 import Booking_History from "./Booking_History";
-import Link from "next/link";
-import { Calendar, ShieldCheck, UserCheck, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, UserCheck } from "lucide-react";
 
 export function IsLogin() {
   const { user } = useAuth();
@@ -13,7 +12,6 @@ export function IsLogin() {
   return (
     <div className="space-y-6">
       
-      {/* Banner ยินดีต้อนรับ */}
       <div className={`p-6 md:p-8 rounded-3xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden ${
         isAdmin 
           ? 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900' 
@@ -37,10 +35,8 @@ export function IsLogin() {
         </div>
       </div>
 
-      {/* ส่วนที่ 1 & 2: ข้อมูลส่วนตัว + กราฟสถิติ */}
       <Person />
 
-      {/* ส่วนที่ 3: ประวัติการจอง 10 รายการล่าสุด */}
       <Booking_History />
 
     </div>
