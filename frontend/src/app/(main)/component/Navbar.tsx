@@ -39,6 +39,7 @@ export function Navbar() {
             key={item.name}
             href={item.href}
             className="flex items-center gap-4 top-3 text-gray-400 px-3 py-3 rounded-lg hover:bg-gray-800 hover:text-white transition-colors duration-500 relative group overflow-hidden"
+            scroll
           >
             <Icon size={25} className="shrink-0 my-1" />
             <span
@@ -104,6 +105,7 @@ export function Navbar() {
             key={"login"}
             href={"/Login"}
             className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-blue-500 shadow-lg shadow-blue-500/50 rounded-lg hover:bg-white hover:text-black transition-colors duration-700 relative group overflow-hidden"
+            scroll
           >
             <LogIn size={25} className="shrink-0 my-1 " />
             <span

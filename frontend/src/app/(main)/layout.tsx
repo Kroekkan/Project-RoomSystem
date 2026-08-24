@@ -1,6 +1,7 @@
 import { Navbar } from "./component/Navbar";
 import { Header } from "./component/Header";
 import { SidebarProvider } from "./context/SidebarContext";
+import ScrollToTop from "./component/ScrollToTop";
 
 export default function MainLayout({
   children,
@@ -13,7 +14,8 @@ export default function MainLayout({
             <Header />
             <div className="flex flex-1 overflow-hidden">
             <Navbar />
-                <main className="flex-1 overflow-y-auto">
+                <main id="main-content" className="flex-1 overflow-y-auto">
+                    <ScrollToTop />
                     {children}
                 </main>
             </div>
