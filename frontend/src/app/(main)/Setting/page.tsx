@@ -366,238 +366,496 @@ const SetColor = [
     ]},
 ]
 
-export default function Setting () {
-    const [ isActive, setIsActive ] = useState("First");
+export default function Setting() {
+  const defaultTheme = Theme[0];
 
-    useEffect(() => {
-        const sections = ["First", "Theme", "Background", "Navbar", "Header"];
+  const defaultColors = {
+    background: defaultTheme.background,
+    backgroundText: '#0f172a',
+    backgroundHover: '#e2e8f0',
 
-        const handleScroll = () => {
-            let currentSection = "First";
-            let closestTop = Infinity;
+    navbar: defaultTheme.navbar,
+    navbarText: '#ffffff',
+    navbarHover: defaultTheme.header,
 
-            sections.forEach((id) => {
-            const element = document.getElementById(id);
+    header: defaultTheme.header,
+    headerText: '#ffffff',
+    headerHover: defaultTheme.navbar,
+  };
 
-            if (!element) return;
+  const [colors, setColors] = useState(defaultColors);
+  const [selectedTheme, setSelectedTheme] = useState(defaultTheme.name);
+  const [isSaved, setIsSaved] = useState(false);
 
-            const top = element.getBoundingClientRect().top;
+  const applyColors = (nextColors: typeof defaultColors) => {
+    document.documentElement.style.setProperty(
+      '--app-background',
+      nextColors.background,
+    );
+    document.documentElement.style.setProperty(
+      '--app-background-text',
+      nextColors.backgroundText,
+    );
+    document.documentElement.style.setProperty(
+      '--app-background-hover',
+      nextColors.backgroundHover,
+    );
 
-            // Section ที่ผ่านจุด 150px ด้านบนแล้ว
-            if (top <= 150 && Math.abs(top - 150) < closestTop) {
-                closestTop = Math.abs(top - 150);
-                currentSection = id;
-            }
-            });
+    document.documentElement.style.setProperty(
+      '--app-navbar',
+      nextColors.navbar,
+    );
+    document.documentElement.style.setProperty(
+      '--app-navbar-text',
+      nextColors.navbarText,
+    );
+    document.documentElement.style.setProperty(
+      '--app-navbar-hover',
+      nextColors.navbarHover,
+    );
 
-            setIsActive(currentSection);
+    document.documentElement.style.setProperty(
+      '--app-header',
+      nextColors.header,
+    );
+    document.documentElement.style.setProperty(
+      '--app-header-text',
+      nextColors.headerText,
+    );
+    document.documentElement.style.setProperty(
+      '--app-header-hover',
+      nextColors.headerHover,
+    );
+
+    document.body.style.backgroundColor = nextColors.background;
+    document.body.style.color = nextColors.backgroundText;
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('roomify-theme');
+
+    if (!savedTheme) {
+      applyColors(defaultColors);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(savedTheme);
+
+      if (parsed.background && parsed.navbar && parsed.header) {
+        const nextColors = {
+          ...defaultColors,
+          ...parsed,
         };
 
-        // true = จับ scroll แม้ตัวที่ scroll จะเป็น div ไม่ใช่ window
-        document.addEventListener("scroll", handleScroll, true);
+        setColors(nextColors);
+        setSelectedTheme(parsed.name || 'กำหนดเอง');
+        applyColors(nextColors);
+      }
+    } catch {
+      applyColors(defaultColors);
+    }
+  }, []);
 
-        handleScroll();
+  const handleThemeSelect = (theme: (typeof Theme)[number]) => {
+    const nextColors = {
+      background: theme.background,
+      backgroundText: '#0f172a',
+      backgroundHover: '#e2e8f0',
 
-        return () => {
-            document.removeEventListener("scroll", handleScroll, true);
-        };
-        }, []);
+      navbar: theme.navbar,
+      navbarText: '#ffffff',
+      navbarHover: theme.header,
 
-    return (
-        <div className="flex flex-col my-10 mx-15 h-auto w-auto gap-10">
+      header: theme.header,
+      headerText: '#ffffff',
+      headerHover: theme.navbar,
+    };
 
-            <button
-                className={`absolute right-5 top-27 w-10 h-10 rounded-lg font-bold cursor-pointer transition-colors
-                        ${
-                            isActive === "First" ? "bg-black border-3 border-white text-white hover:bg-gray-700" : "bg-white border-3 text-black hover:bg-gray-200"
-                        }
-                    `}
-                onClick={() => {
-                    setIsActive("First");
-                    document.getElementById("First")?.scrollIntoView({
-                    behavior: "smooth",
-                    });
-                }}
-                >
-                ^
-            </button>
-            <button
-               className={`absolute right-5 top-40 w-10 h-10 rounded-lg font-bold cursor-pointer transition-colors
-                        ${
-                            isActive === "Theme" ? "bg-black border-3 border-white text-white hover:bg-gray-700" : "bg-white border-3 text-black hover:bg-gray-200"
-                        }
-                    `}
-                onClick={() => {
-                    setIsActive("Theme");
-                    document.getElementById("Theme")?.scrollIntoView({
-                    behavior: "smooth",
-                    });
-                }}
-                >
-                T
-            </button>
-            <button
-                className={`absolute right-5 top-53 w-10 h-10 rounded-lg font-bold cursor-pointer transition-colors
-                        ${
-                            isActive === "Background" ? "bg-black border-3 border-white text-white hover:bg-gray-700" : "bg-white border-3 text-black hover:bg-gray-200"
-                        }
-                    `}
-                onClick={() => {
-                    setIsActive("Background");
-                    document.getElementById("Background")?.scrollIntoView({
-                    behavior: "smooth",
-                    });
-                }}
-                >
-                B
-            </button>
-            <button
-                className={`absolute right-5 top-66 w-10 h-10 rounded-lg font-bold cursor-pointer transition-colors
-                        ${
-                            isActive === "Navbar" ? "bg-black border-3 border-white text-white hover:bg-gray-700" : "bg-white border-3 text-black hover:bg-gray-200"
-                        }
-                    `}
-                onClick={() => {
-                    setIsActive("Navbar");
-                    document.getElementById("Navbar")?.scrollIntoView({
-                    behavior: "smooth",
-                    });
-                }}
-                >
-                N
-            </button>
-            <button
-                className={`absolute right-5 top-79 w-10 h-10 rounded-lg font-bold cursor-pointer transition-colors
-                        ${
-                            isActive === "Header" ? "bg-black border-3 border-white text-white hover:bg-gray-700" : "bg-white border-3 text-black hover:bg-gray-200"
-                        }
-                    `}
-                onClick={() => {
-                    setIsActive("Header");
-                    document.getElementById("Header")?.scrollIntoView({
-                    behavior: "smooth",
-                    });
-                }}
-                >
-                H
-            </button>
+    setColors(nextColors);
+    setSelectedTheme(theme.name);
+    setIsSaved(false);
+    applyColors(nextColors);
+  };
 
-            <div id="First" className="bg-white rounded-xl p-6 border-1 border-gray-300 shadow-lg">
-                <h1 className="font-bold text-3xl">ตั้งค่า</h1>
-                <p className="text-gray-400 pt-1">ใช้ปรับสี Background, Navber, Header ตามที่ต้องการ</p>
-            </div>
+  const handleColorSelect = (
+    target: keyof typeof defaultColors,
+    color: string,
+  ) => {
+    const nextColors = {
+      ...colors,
+      [target]: color,
+    };
 
-            <div id="Theme" className="bg-white rounded-xl p-6 border-gray-300 shadow-lg">
-                <h1 className="font-bold text-2xl text-center">Theme</h1>
-                <hr className="mt-5" />
+    setColors(nextColors);
+    setSelectedTheme('กำหนดเอง');
+    setIsSaved(false);
+    applyColors(nextColors);
+  };
 
-                <div className="grid grid-cols-5 gap-4 justify-items-center">
-                    {Theme.map((theme) => {
-                        return (
-                            <div
-                                key={theme.name}
-                                className="flex flex-col mt-10 items-center"
-                            >
-                                <label className="text-center text-lg font-semibold mb-2">{theme.name}</label>
-                                <button 
-                                    className="w-20 h-20 border-3 rounded-full cursor-pointer"
-                                    style={{
-                                        background: `linear-gradient(to right, ${theme.background}, ${theme.navbar}, ${theme.header})`
-                                    }}
-                                >
-                                </button>
-                            </div>
-                    )})}
-                </div>
+  const handleSave = () => {
+    localStorage.setItem(
+      'roomify-theme',
+      JSON.stringify({
+        ...colors,
+        name: selectedTheme,
+      }),
+    );
 
-            </div>
+    setIsSaved(true);
+    window.setTimeout(() => setIsSaved(false), 1800);
+  };
 
-            <div id="Background" className="bg-white rounded-xl p-6 border-gray-300 shadow-lg">
-                <h1 className="font-bold text-2xl text-center">Background</h1>
-                <hr className="mt-5" />
+  const handleReset = () => {
+    setColors(defaultColors);
+    setSelectedTheme(defaultTheme.name);
+    setIsSaved(false);
 
-                {SetColor.map((c) => {
-                    return (
-                        <div
-                            key={c.name}
-                            className="flex m-5"
-                        >
-                            <label className="text-center text-lg font-semibold mb-2 w-30 text-left">{c.name}</label>
-                            <div className="flex flex-1 justify-between">
-                                {c.set.map((color, index) => {
-                                    return (
-                                        <button 
-                                            key={index}
-                                            className={`h-10 w-10 rounded-lg border-3 border cursor-pointer`}
-                                            style={{
-                                                background: `${color.color}`
-                                            }}
-                                        ></button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
+    localStorage.removeItem('roomify-theme');
+    applyColors(defaultColors);
+  };
 
-            <div id="Navbar" className="bg-white rounded-xl p-6 border-gray-300 shadow-lg">
-                <h1 className="font-bold text-2xl text-center">Navbar</h1>
-                <hr className="mt-5" />
-
-                {SetColor.map((c) => {
-                    return (
-                        <div
-                            key={c.name}
-                            className="flex m-5"
-                        >
-                            <label className="text-center text-lg font-semibold mb-2 w-30 text-left">{c.name}</label>
-                            <div className="flex flex-1 justify-between">
-                                {c.set.map((color, index) => {
-                                    return (
-                                        <button 
-                                            key={index}
-                                            className={`h-10 w-10 rounded-lg border-3 border cursor-pointer`}
-                                            style={{
-                                                background: `${color.color}`
-                                            }}
-                                        ></button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
-            
-            <div id="Header" className="bg-white rounded-xl p-6 border-gray-300 shadow-lg">
-                <h1 className="font-bold text-2xl text-center">Header</h1>
-                <hr className="mt-5" />
-
-                {SetColor.map((c) => {
-                    return (
-                        <div
-                            key={c.name}
-                            className="flex m-5"
-                        >
-                            <label className="text-center text-lg font-semibold mb-2 w-30 text-left">{c.name}</label>
-                            <div className="flex flex-1 justify-between">
-                                {c.set.map((color, index) => {
-                                    return (
-                                        <button 
-                                            key={index}
-                                            className={`h-10 w-10 rounded-lg border-3 border cursor-pointer`}
-                                            style={{
-                                                background: `${color.color}`
-                                            }}
-                                        ></button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
+  const ColorPicker = ({
+    title,
+    target,
+    description,
+  }: {
+    title: string;
+    target: keyof typeof defaultColors;
+    description: string;
+  }) => (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+      <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+          <p className="mt-1 text-sm text-slate-400">{description}</p>
         </div>
-    )
+
+        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <span
+            className="h-6 w-6 rounded-lg border border-black/10"
+            style={{ backgroundColor: colors[target] }}
+          />
+          <span className="font-mono text-xs font-semibold text-slate-600">
+            {colors[target]}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {SetColor.map((group) => (
+          <div
+            key={`${target}-${group.name}`}
+            className="flex flex-col gap-3 border-b border-slate-100 pb-4 last:border-0 last:pb-0 md:flex-row md:items-center"
+          >
+            <div className="w-24 text-sm font-bold capitalize text-slate-600">
+              {group.name}
+            </div>
+
+            <div className="flex flex-1 flex-wrap gap-2">
+              {group.set.map((item, index) => {
+                const isSelected = colors[target] === item.color;
+
+                return (
+                  <button
+                    key={`${group.name}-${index}`}
+                    type="button"
+                    onClick={() => handleColorSelect(target, item.color)}
+                    className={`h-9 w-9 cursor-pointer rounded-xl border-2 transition-transform hover:scale-110 ${
+                      isSelected
+                        ? 'scale-110 border-slate-900 ring-2 ring-slate-300'
+                        : 'border-white shadow-sm ring-1 ring-slate-200'
+                    }`}
+                    style={{ backgroundColor: item.color }}
+                    title={`${group.name} ${index + 1}`}
+                    aria-label={`เลือกสี ${group.name}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+
+  return (
+    <div
+      className="min-h-screen px-4 py-8 md:px-8"
+      style={{
+        backgroundColor: colors.background,
+        color: colors.backgroundText,
+      }}
+    >
+      <div className="mx-auto max-w-6xl space-y-6">
+        <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
+          <div
+            className="p-6 md:p-8"
+            style={{
+              backgroundColor: colors.header,
+              color: colors.headerText,
+            }}
+          >
+            <p className="mb-2 text-sm font-semibold opacity-80">
+              ROOMIFY SETTINGS
+            </p>
+            <h1 className="text-3xl font-extrabold">ปรับแต่งธีมระบบ</h1>
+            <p className="mt-2 text-sm opacity-90">
+              เลือกสีที่เหมาะกับรูปแบบของระบบคุณ และดูตัวอย่างได้ทันที
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                ธีมที่กำลังใช้งาน
+              </p>
+              <p className="mt-1 text-lg font-bold text-slate-800">
+                {selectedTheme}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+              >
+                คืนค่าเริ่มต้น
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                className="cursor-pointer rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
+              >
+                {isSaved ? '✓ บันทึกแล้ว' : 'บันทึกธีมนี้'}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+              Live Preview
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-slate-800">
+              ตัวอย่างการแสดงผล
+            </h2>
+          </div>
+
+          <div
+            className="overflow-hidden rounded-2xl border border-slate-200"
+            style={{
+              backgroundColor: colors.background,
+              color: colors.backgroundText,
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{
+                backgroundColor: colors.navbar,
+                color: colors.navbarText,
+              }}
+            >
+              <span className="text-lg font-extrabold">roomify</span>
+
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1 text-xs font-semibold transition-colors"
+                style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.backgroundColor = colors.navbarHover;
+                }}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.backgroundColor =
+                    'rgba(255,255,255,0.15)';
+                }}
+              >
+                ผู้ใช้งาน
+              </button>
+            </div>
+
+            <div className="p-5">
+              <div
+                className="rounded-2xl p-5 shadow-sm"
+                style={{
+                  backgroundColor: colors.header,
+                  color: colors.headerText,
+                }}
+              >
+                <p className="text-sm font-semibold opacity-80">
+                  จัดการห้องเรียน
+                </p>
+                <h3 className="mt-1 text-xl font-bold">
+                  ระบบจองห้องเรียน
+                </h3>
+
+                <button
+                  type="button"
+                  className="mt-4 rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    color: colors.headerText,
+                  }}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.backgroundColor =
+                      colors.headerHover;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor =
+                      'rgba(255,255,255,0.15)';
+                  }}
+                >
+                  ดูรายละเอียด
+                </button>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {['ห้องว่าง', 'รออนุมัติ', 'การจองวันนี้'].map(
+                  (label, index) => (
+                    <div
+                      key={label}
+                      className="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors"
+                      onMouseEnter={(event) => {
+                        event.currentTarget.style.backgroundColor =
+                          colors.backgroundHover;
+                      }}
+                      onMouseLeave={(event) => {
+                        event.currentTarget.style.backgroundColor = '#ffffff';
+                      }}
+                    >
+                      <p className="text-xs text-slate-400">{label}</p>
+                      <p className="mt-1 text-2xl font-bold text-slate-800">
+                        {index === 0 ? '12' : index === 1 ? '3' : '8'}
+                      </p>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+              Preset Themes
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-slate-800">
+              ธีมสำเร็จรูป
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              คลิกธีมที่ต้องการเพื่อดูผลลัพธ์ทันที
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Theme.map((theme) => {
+              const isSelected = selectedTheme === theme.name;
+
+              return (
+                <button
+                  key={theme.name}
+                  type="button"
+                  onClick={() => handleThemeSelect(theme)}
+                  className={`group cursor-pointer rounded-2xl border p-3 text-left transition-all hover:-translate-y-1 hover:shadow-md ${
+                    isSelected
+                      ? 'border-emerald-500 ring-2 ring-emerald-200'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div
+                    className="mb-3 overflow-hidden rounded-xl border border-black/5"
+                    style={{ backgroundColor: theme.background }}
+                  >
+                    <div
+                      className="h-5"
+                      style={{ backgroundColor: theme.navbar }}
+                    />
+
+                    <div className="p-3">
+                      <div
+                        className="h-8 rounded-lg"
+                        style={{ backgroundColor: theme.header }}
+                      />
+                      <div className="mt-2 h-2 w-3/4 rounded bg-slate-200" />
+                      <div className="mt-1 h-2 w-1/2 rounded bg-slate-200" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-bold text-slate-700">
+                      {theme.name}
+                    </span>
+
+                    {isSelected && (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700">
+                        ใช้งานอยู่
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <ColorPicker
+          title="สีพื้นหลัง"
+          target="background"
+          description="ใช้เป็นสีพื้นหลังหลักของหน้าเว็บ"
+        />
+
+        <ColorPicker
+          title="สีตัวอักษรบนพื้นหลัง"
+          target="backgroundText"
+          description="ใช้กับข้อความทั่วไปในเนื้อหาของระบบ"
+        />
+
+        <ColorPicker
+          title="สี Hover ในเนื้อหา"
+          target="backgroundHover"
+          description="ใช้เมื่อวางเมาส์บนปุ่มหรือการ์ดในหน้าเนื้อหา"
+        />
+
+        <ColorPicker
+          title="สีแถบนำทาง"
+          target="navbar"
+          description="ใช้กับ Sidebar หรือ Navigation Bar"
+        />
+
+        <ColorPicker
+          title="สีตัวอักษร Navbar"
+          target="navbarText"
+          description="ใช้กับข้อความและไอคอนภายใน Navbar"
+        />
+
+        <ColorPicker
+          title="สี Hover Navbar"
+          target="navbarHover"
+          description="ใช้กับเมนู Navbar เมื่อวางเมาส์ชี้"
+        />
+
+        <ColorPicker
+          title="สีส่วนหัว"
+          target="header"
+          description="ใช้กับ Header, Banner และส่วนที่ต้องการเน้น"
+        />
+
+        <ColorPicker
+          title="สีตัวอักษร Header"
+          target="headerText"
+          description="ใช้กับข้อความและไอคอนภายใน Header"
+        />
+
+        <ColorPicker
+          title="สี Hover Header"
+          target="headerHover"
+          description="ใช้กับปุ่มหรือเมนูใน Header เมื่อวางเมาส์ชี้"
+        />
+      </div>
+    </div>
+  );
 }

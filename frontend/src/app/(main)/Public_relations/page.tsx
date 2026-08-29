@@ -9,11 +9,11 @@ import {
   PackageSearch,
   PackageCheck,
   AlertTriangle,
-  Plus,
   Clock,
   User,
   Trash2,
   CheckCircle2,
+  AlertCircle,
   MapPin,
 } from "lucide-react";
 
@@ -25,6 +25,7 @@ interface Post {
   title: string;
   message: string;
   location?: string;
+  imageUrl?: string;
   authorId: number;
   author: { id: number; name?: string; picture?: string };
   createdAt: string;
@@ -45,6 +46,44 @@ const CATEGORIES: {
   { key: 'FOUND', label: 'เจอของ', icon: PackageCheck, hasResolve: true },
   { key: 'MAINTENANCE', label: 'ปิดปรับปรุง', icon: AlertTriangle, hasResolve: false },
 ];
+
+const STATUS_CONFIG: Record<CategoryKey, {
+  resolvedText: string;
+  unresolvedText: string;
+  btnResolveText: string;
+  btnUnresolveText: string;
+}> = {
+  DAMAGED: {
+    resolvedText: 'แก้ไขแล้ว',
+    unresolvedText: 'ยังไม่แก้ไข',
+    btnResolveText: 'ทำเครื่องหมายว่าแก้ไขแล้ว',
+    btnUnresolveText: 'ยกเลิกการแก้ไข',
+  },
+  LOST: {
+    resolvedText: 'พบของแล้ว',
+    unresolvedText: 'ยังไม่พบของ',
+    btnResolveText: 'ทำเครื่องหมายว่าพบของแล้ว',
+    btnUnresolveText: 'ยกเลิกสถานะพบของ',
+  },
+  FOUND: {
+    resolvedText: 'ส่งคืนแล้ว',
+    unresolvedText: 'ยังไม่ส่งคืน',
+    btnResolveText: 'ทำเครื่องหมายว่าส่งคืนแล้ว',
+    btnUnresolveText: 'ยกเลิกสถานะส่งคืน',
+  },
+  GENERAL: {
+    resolvedText: 'เสร็จสิ้น',
+    unresolvedText: 'รอดำเนินการ',
+    btnResolveText: 'ทำเครื่องหมายว่าเสร็จสิ้น',
+    btnUnresolveText: 'ยกเลิก',
+  },
+  MAINTENANCE: {
+    resolvedText: 'เสร็จสิ้น',
+    unresolvedText: 'รอดำเนินการ',
+    btnResolveText: 'ทำเครื่องหมายว่าเสร็จสิ้น',
+    btnUnresolveText: 'ยกเลิก',
+  },
+};
 
 const STYLE_MAP: Record<CategoryKey, {
   pin: string; badge: string; badgeText: string; icon: string; border: string;
@@ -100,83 +139,8 @@ export default function Publicrelations() {
 
   const canManage = (post: Post) => isAdmin || post.authorId === currentUser?.id;
 
-  const handleCreatePost = async () => {
-    if (!currentUser?.id) {
-      Swal.fire({ icon: 'warning', title: 'กรุณาเข้าสู่ระบบก่อนโพสต์ประกาศ', heightAuto: false });
-      return;
-    }
-
-    const { value: formValues } = await Swal.fire({
-      title: 'ประกาศใหม่',
-      html: `
-        <div style="text-align:left; font-size:14px;">
-          <div style="margin-bottom:12px;">
-            <label style="display:block; font-weight:600; margin-bottom:4px;">หมวดหมู่</label>
-            <select id="swal-category" class="swal2-select" style="display:block; width:100%; margin:0; box-sizing:border-box;">
-              ${CATEGORIES.map((c) => `<option value="${c.key}">${c.label}</option>`).join('')}
-            </select>
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="display:block; font-weight:600; margin-bottom:4px;">หัวข้อ</label>
-            <input id="swal-title" class="swal2-input" placeholder="เช่น โปรเจกเตอร์ห้อง 301 เสีย" style="display:block; width:100%; margin:0; box-sizing:border-box;">
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="display:block; font-weight:600; margin-bottom:4px;">ห้อง / สถานที่ (ถ้ามี)</label>
-            <input id="swal-location" class="swal2-input" placeholder="เช่น ห้อง 301" style="display:block; width:100%; margin:0; box-sizing:border-box;">
-          </div>
-          <div>
-            <label style="display:block; font-weight:600; margin-bottom:4px;">รายละเอียด</label>
-            <textarea id="swal-message" class="swal2-textarea" placeholder="อธิบายรายละเอียด" style="display:block; width:100%; margin:0; box-sizing:border-box;"></textarea>
-          </div>
-        </div>
-      `,
-      width: 480,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: 'โพสต์ประกาศ',
-      cancelButtonText: 'ยกเลิก',
-      confirmButtonColor: '#4f46e5',
-      heightAuto: false,
-      preConfirm: () => {
-        const category = (document.getElementById('swal-category') as HTMLSelectElement).value as CategoryKey;
-        const title = (document.getElementById('swal-title') as HTMLInputElement).value.trim();
-        const location = (document.getElementById('swal-location') as HTMLInputElement).value.trim();
-        const message = (document.getElementById('swal-message') as HTMLTextAreaElement).value.trim();
-
-        if (!title || !message) {
-          Swal.showValidationMessage('กรุณากรอกหัวข้อและรายละเอียด');
-          return;
-        }
-        return { category, title, location, message };
-      },
-    });
-
-    if (!formValues) return;
-
-    try {
-      const res = await fetch(`${API}/public-posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          category: formValues.category,
-          title: formValues.title,
-          message: formValues.message,
-          location: formValues.location || undefined,
-        }),
-      });
-
-      if (!res.ok) throw new Error('โพสต์ประกาศล้มเหลว');
-
-      await fetchPosts(activeFilter === 'ALL' ? undefined : activeFilter);
-      Swal.fire({ title: 'โพสต์สำเร็จ!', icon: 'success', timer: 1200, showConfirmButton: false, heightAuto: false });
-    } catch (err) {
-      console.error(err);
-      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถโพสต์ประกาศได้', heightAuto: false });
-    }
-  };
-
   const handleToggleResolved = async (post: Post) => {
+    const statusCfg = STATUS_CONFIG[post.category];
     try {
       const res = await fetch(`${API}/public-posts/${post.id}`, {
         method: 'PATCH',
@@ -188,6 +152,13 @@ export default function Publicrelations() {
       if (!res.ok) throw new Error('อัปเดตสถานะล้มเหลว');
 
       setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, resolved: !p.resolved } : p)));
+      Swal.fire({
+        title: !post.resolved ? statusCfg.resolvedText : statusCfg.unresolvedText,
+        icon: 'success',
+        timer: 1000,
+        showConfirmButton: false,
+        heightAuto: false,
+      });
     } catch (err) {
       console.error(err);
       Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถอัปเดตสถานะได้', heightAuto: false });
@@ -197,6 +168,7 @@ export default function Publicrelations() {
   const handleDelete = async (id: number) => {
     const result = await Swal.fire({
       title: 'ลบประกาศนี้?',
+      text: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
@@ -229,24 +201,20 @@ export default function Publicrelations() {
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+        <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-slate-800">ประชาสัมพันธ์</h1>
-              <p className="text-xs text-slate-400 mt-0.5">แจ้งห้องชำรุด ของหาย ของเจอ และประกาศต่างๆ</p>
+              <p className="text-xs text-slate-400 mt-0.5">แจ้งห้องชำรุด ของหาย ของเจอ และประกาศต่างๆ ภายในสถาบัน</p>
             </div>
           </div>
 
-          <button
-            onClick={handleCreatePost}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            ประกาศใหม่
-          </button>
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600">
+            ทั้งหมด {posts.length} รายการ
+          </span>
         </div>
 
         {/* Filter pills */}
@@ -279,11 +247,11 @@ export default function Publicrelations() {
           })}
         </div>
 
-        {/* Board */}
+        {/* 📋 รายการการ์ดประกาศ (แสดงเต็มรูปแบบ ไม่ตีกรอบ Scroll) */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse h-44">
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse h-48">
                 <div className="h-4 bg-slate-100 rounded w-20 mb-3"></div>
                 <div className="h-4 bg-slate-100 rounded w-3/4 mb-2"></div>
                 <div className="h-3 bg-slate-100 rounded w-full mb-1"></div>
@@ -299,76 +267,104 @@ export default function Publicrelations() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredPosts.map((post) => {
-              const cat = CATEGORIES.find((c) => c.key === post.category)!;
+              const cat = CATEGORIES.find((c) => c.key === post.category) || CATEGORIES[0];
               const Icon = cat.icon;
-              const style = STYLE_MAP[post.category];
+              const style = STYLE_MAP[post.category] || STYLE_MAP.GENERAL;
+              const statusCfg = STATUS_CONFIG[post.category];
 
               return (
                 <div
                   key={post.id}
-                  className={`relative bg-white rounded-2xl border ${style.border} shadow-sm p-5 pt-6 transition-transform hover:-translate-y-0.5 hover:shadow-md ${
-                    post.resolved ? 'opacity-60' : ''
+                  className={`relative bg-white rounded-2xl border ${style.border} shadow-sm p-5 pt-6 transition-transform hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between ${
+                    post.resolved ? 'bg-slate-50/70 opacity-80' : ''
                   }`}
                 >
                   <span className={`absolute -top-2 left-5 w-4 h-4 rounded-full ${style.pin} ring-4 ring-white shadow-sm`} />
 
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${style.badge} ${style.badgeText}`}>
-                      <Icon className="w-3 h-3" />
-                      {cat.label}
-                    </span>
-                    {post.resolved && (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        แก้ไขแล้ว
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${style.badge} ${style.badgeText}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {cat.label}
                       </span>
+
+                      {cat.hasResolve && (
+                        post.resolved ? (
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {statusCfg.resolvedText}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {statusCfg.unresolvedText}
+                          </span>
+                        )
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-slate-800 text-sm leading-snug mb-1.5">{post.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-3">{post.message}</p>
+
+                    {post.imageUrl && (
+                      <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 max-h-40 bg-slate-50">
+                        <img 
+                          src={post.imageUrl} 
+                          alt={post.title} 
+                          className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300" 
+                        />
+                      </div>
+                    )}
+
+                    {post.location && (
+                      <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-3">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{post.location}</span>
+                      </div>
                     )}
                   </div>
 
-                  <h3 className="font-bold text-slate-800 text-sm leading-snug mb-1.5">{post.title}</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-3">{post.message}</p>
+                  <div>
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-1.5 truncate max-w-[140px]">
+                        {post.author?.picture ? (
+                          <img src={post.author.picture} alt="" className="w-4 h-4 rounded-full object-cover" />
+                        ) : (
+                          <User className="w-3.5 h-3.5" />
+                        )}
+                        <span className="truncate">{post.author?.name || 'ไม่ทราบชื่อ'}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{timeAgo(post.createdAt)}</span>
+                      </div>
+                    </div>
 
-                  {post.location && (
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-3">
-                      <MapPin className="w-3 h-3" />
-                      {post.location}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-[11px] text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      {post.author?.name || 'ไม่ทราบชื่อ'}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {timeAgo(post.createdAt)}
-                    </div>
+                    {canManage(post) && (
+                      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-slate-50">
+                        {cat.hasResolve && (
+                          <button
+                            onClick={() => handleToggleResolved(post)}
+                            className={`flex-1 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+                              post.resolved
+                                ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                            }`}
+                          >
+                            {post.resolved ? statusCfg.btnUnresolveText : statusCfg.btnResolveText}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ml-auto"
+                          title="ลบประกาศ"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {canManage(post) && (
-                    <div className="flex items-center gap-2 mt-3">
-                      {cat.hasResolve && (
-                        <button
-                          onClick={() => handleToggleResolved(post)}
-                          className={`flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                            post.resolved
-                              ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                          }`}
-                        >
-                          {post.resolved ? 'ยกเลิกการแก้ไข' : 'ทำเครื่องหมายว่าแก้ไขแล้ว'}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="ลบประกาศ"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               );
             })}

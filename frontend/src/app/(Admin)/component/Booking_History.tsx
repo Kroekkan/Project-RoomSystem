@@ -26,6 +26,8 @@ interface Booking {
   purpose: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
   createdAt: string;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -33,6 +35,14 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 function formatDateTH(dStr: string): string {
   const d = new Date(dStr);
   return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
+}
+
+function formatTimeTH(dStr: string): string {
+  return new Date(dStr).toLocaleTimeString('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Bangkok',
+  });
 }
 
 export default function Booking_History() {
@@ -44,21 +54,44 @@ export default function Booking_History() {
 
   useEffect(() => {
     if (!user?.id) return;
-    setIsLoading(true);
 
-    // 🟢 ถ้าเป็น ADMIN ดึง /bookings (รวมทั้งระบบ) | ถ้าเป็น USER ดึง /bookings/user/:id (เฉพาะตัวเอง)
-    const fetchUrl = isAdmin ? `${API}/bookings` : `${API}/bookings/user/${user.id}`;
+    const fetchHistory = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true);
 
-    fetch(fetchUrl)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
+      const fetchUrl = isAdmin
+        ? `${API}/bookings`
+        : `${API}/bookings/user/${user.id}`;
+
+      try {
+        const res = await fetch(fetchUrl, {
+          credentials: 'include',
+        });
+
+        const data = res.ok ? await res.json() : [];
+
         if (Array.isArray(data)) {
-          const sorted = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          setHistory(sorted.slice(0, 10)); // 🟢 แสดง 10 อันล่าสุด
+          const sorted = data.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() -
+              new Date(a.createdAt).getTime(),
+          );
+
+          setHistory(sorted.slice(0, 10));
         }
-      })
-      .catch((err) => console.error("Fetch history error:", err))
-      .finally(() => setIsLoading(false));
+      } catch (err) {
+        console.error('Fetch history error:', err);
+      } finally {
+        if (showLoading) setIsLoading(false);
+      }
+    };
+
+    fetchHistory(true);
+
+    const intervalId = window.setInterval(() => {
+      fetchHistory(false);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
   }, [user?.id, isAdmin]);
 
   return (
@@ -96,6 +129,7 @@ export default function Booking_History() {
               <th className="py-3 px-4">วันที่ / คาบเรียน</th>
               <th className="py-3 px-4">วัตถุประสงค์</th>
               <th className="py-3 px-4 text-center">สถานะ</th>
+              <th className="py-3 px-4 text-center">เวลาเข้า / ออก</th>
               <th className="py-3 px-4 text-right">วันที่ทำรายการ</th>
             </tr>
           </thead>
@@ -108,12 +142,13 @@ export default function Booking_History() {
                   <td className="py-4 px-4"><div className="h-4 bg-slate-100 rounded w-32"></div></td>
                   <td className="py-4 px-4"><div className="h-4 bg-slate-100 rounded w-40"></div></td>
                   <td className="py-4 px-4"><div className="h-5 bg-slate-100 rounded-full w-20 mx-auto"></div></td>
+                  <td className="py-4 px-4"><div className="h-4 bg-slate-100 rounded w-24 mx-auto"></div></td>
                   <td className="py-4 px-4"><div className="h-4 bg-slate-100 rounded w-20 ml-auto"></div></td>
                 </tr>
               ))
             ) : history.length === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 6 : 5} className="py-12 text-center text-slate-400">
+                <td colSpan={isAdmin ? 7 : 6} className="py-12 text-center text-slate-400">
                   <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                   <p className="font-semibold text-sm">ยังไม่มีประวัติการจองห้องพักในระบบ</p>
                 </td>
@@ -181,6 +216,19 @@ export default function Booking_History() {
                         <Ban className="w-3.5 h-3.5 text-slate-400" /> ยกเลิกแล้ว
                       </span>
                     )}
+                  </td>
+
+                  {/* {แสดงเวลาเข้า / ออก ห้องเรียน} */}
+                  <td className="py-3.5 px-4 text-center">
+                    <div className="flex flex-col gap-1 text-[11px]">
+                      <span className="font-semibold text-emerald-600">
+                        เข้า: {item.checkInTime ? formatTimeTH(item.checkInTime) : '-'}
+                      </span>
+
+                      <span className="font-semibold text-rose-500">
+                        ออก: {item.checkOutTime ? formatTimeTH(item.checkOutTime) : '-'}
+                      </span>
+                    </div>
                   </td>
 
                   {/* วันที่ทำรายการ */}

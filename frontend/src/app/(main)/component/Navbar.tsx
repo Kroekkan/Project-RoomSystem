@@ -57,8 +57,11 @@ export function Navbar() {
 
   return (
     <aside
-      className={`relative h-full bg-gray-900 text-gray-200 flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
+      className={`relative h-full text-gray-200 flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
                 ${fold ? "w-15" : "w-55"}`}
+      style={{
+        backgroundColor: user?.navbar || "#111827",
+      }}
     >
       <div className={`absolute inset-y-0 right-0`}>
         <button

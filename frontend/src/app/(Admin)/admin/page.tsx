@@ -4,6 +4,7 @@ import { useAuth } from "@/app/hooks/useAuth";
 import { Person } from "../component/Person";
 import Booking_History from "../component/Booking_History";
 import { ShieldCheck, UserCheck } from "lucide-react";
+import AnnouncementBoard from "@/app/(main)/component/home/AnnouncementBoard";
 
 export default function ProfilePage() {
     const { user } = useAuth();
@@ -39,6 +40,8 @@ export default function ProfilePage() {
 
                 {/* ส่วนที่ 3: ประวัติการจอง 10 รายการล่าสุด (ADMIN รวม / USER เฉพาะตนเอง) */}
                 <Booking_History />
+
+                <AnnouncementBoard />
 
             </div>
         </div>

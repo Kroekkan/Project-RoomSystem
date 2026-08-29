@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Swal from "sweetalert2";
+import { Wrench, AlertTriangle, CalendarDays } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Room { 
   id: number; 
@@ -15,7 +17,7 @@ interface CurrentUser { id: number | string; name: string; email?: string; phone
 interface ScheduleItem {
   id: number;
   day: string;
-  period: number;
+  period: string;
   subject: string;
   teacher: string;
   classroom: string;
@@ -27,15 +29,28 @@ interface BookingItem {
   userName: string;
   day: string;
   date: string;
-  period: number;
+  period: string;
   purpose: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+}
+
+// 🟢 โครงสร้างข้อมูลประชาสัมพันธ์
+interface PublicPost {
+  id: number;
+  category: 'GENERAL' | 'DAMAGED' | 'LOST' | 'FOUND' | 'MAINTENANCE';
+  title: string;
+  message: string;
+  location?: string;
+  imageUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  resolved: boolean;
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
-const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const periods = ["1", "2", "พัก 30", "3", "4", "5", "6", "7", "8", "9"];
 const time = ["8:30-9:20", "9:20-10:10", "10:10-10:40", "10:40-11:30", "11:30-12:20", 
     "12:20-13:10", "13:10-14:00", "14:00-14:50", "14:50-15:40", "15:40-16:30"
 ]
@@ -65,13 +80,14 @@ function formatDateISO(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function formatDateTH(d: Date): string { 
-  return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }); 
+function formatDateTH(d: Date | string): string { 
+  const dt = typeof d === 'string' ? new Date(d) : d;
+  return dt.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }); 
 }
 
-function getPeriodTitle(p: number): string {
-  if (p === 3) return "พัก 30";
-  return `คาบ ${p > 3 ? p - 1 : p}`;
+function getPeriodTitle(p: string): string {
+  // if (p === 3) return "พัก 30";
+  return `คาบ ${p}`;
 }
 
 export default function UserBookingPage() {
@@ -85,17 +101,21 @@ export default function UserBookingPage() {
 
   const [adminSchedules, setAdminSchedules] = useState<ScheduleItem[]>([]);
   const [userBookings, setUserBookings] = useState<BookingItem[]>([]);
+  const [publicPosts, setPublicPosts] = useState<PublicPost[]>([]); // 🟢 เก็บข้อมูลประกาศ
   const [isLoading, setIsLoading] = useState(false);
 
   const [currentMonday, setCurrentMonday] = useState<Date>(getMonday(new Date()));
   const sunday = addDays(currentMonday, 6);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetSlot, setTargetSlot] = useState<{ day: string; date: string; period: number } | null>(null);
+  const [targetSlot, setTargetSlot] = useState<{ day: string; date: string; period: string } | null>(null);
   const [phone, setPhone] = useState("");
   const [lineId, setLineId] = useState("");
   const [purpose, setPurpose] = useState("");
 
+  const alertedRoomRef = useRef<number | null>(null);
+
+  // 🟢 1. ดึงห้อง, ผู้ใช้, และข้อมูลประกาศประชาสัมพันธ์
   useEffect(() => {
     fetch(`${API}/rooms`)
       .then(res => res.json())
@@ -115,11 +135,9 @@ export default function UserBookingPage() {
       }
     }
 
-    fetch(`${API}/users/me`, {
-      credentials: 'include',
-    })
+    fetch(`${API}/users/me`, { credentials: 'include' })
       .then(res => {
-        if (!res.ok) throw new Error('Unauthenticated');
+        if (!res.ok) return null;
         return res.json();
       })
       .then(user => {
@@ -130,17 +148,33 @@ export default function UserBookingPage() {
           setLineId(activeLineId);
         }
       })
-      .catch(err => {
-        console.error("ดึงข้อมูลผู้ใช้ปัจจุบันล้มเหลว:", err);
-      });
+      .catch(() => {});
+
+    // 🟢 ดึงข้อมูลประชาสัมพันธ์ทั้งหมด
+    fetchPublicPosts();
   }, []);
 
-  // 🟢 เพิ่ม Auto Refresh ดึงข้อมูลตารางใหม่ทุกๆ 5 วินาที
+  const fetchPublicPosts = async () => {
+    try {
+      const res = await fetch(`${API}/public-posts`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setPublicPosts(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Fetch public posts error:", err);
+    }
+  };
+
+  // 🟢 Auto Refresh ตารางและประกาศทุกๆ 5 วินาที
   useEffect(() => {
     if (selectedRoom) fetchFullSchedule(selectedRoom.id, true);
 
     const interval = setInterval(() => {
-      if (selectedRoom) fetchFullSchedule(selectedRoom.id, false); // false = ไม่ต้องขึ้นโครงกระดูกโหลดชั่วคราว
+      if (selectedRoom) {
+        fetchFullSchedule(selectedRoom.id, false);
+        fetchPublicPosts();
+      }
     }, 5000);
 
     return () => clearInterval(interval);
@@ -156,12 +190,10 @@ export default function UserBookingPage() {
   const filteredRooms = useMemo(() => {
     return rooms.filter(room => {
       const matchesBuilding = selectedBuilding === "ALL" || room.building === selectedBuilding;
-
       const isLab = room.category === "ห้องปฏิบัติการ" || room.name.includes("Lab") || room.name.includes("ปฏิบัติการ");
       let matchesCategory = true;
       if (selectedCategory === "LAB") matchesCategory = isLab;
       if (selectedCategory === "GENERAL") matchesCategory = !isLab;
-
       return matchesBuilding && matchesCategory;
     });
   }, [rooms, selectedBuilding, selectedCategory]);
@@ -176,7 +208,6 @@ export default function UserBookingPage() {
     }
   }, [filteredRooms]);
 
-  // 🟢 ดึงข้อมูลตาราง (เพิ่มพารามิเตอร์ showLoading)
   const fetchFullSchedule = async (roomId: number, showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
@@ -195,6 +226,75 @@ export default function UserBookingPage() {
     }
   };
 
+  // 🟢 ฟังก์ชันตรวจสอบว่าประกาศนี้เกี่ยวข้องกับห้องที่เลือกหรือไม่
+  const isPostRelatedToRoom = (post: PublicPost, room: Room | null): boolean => {
+    if (!post.location || !room) return false;
+    const loc = post.location.toLowerCase().trim();
+    const roomName = room.name.toLowerCase().trim();
+    return loc.includes(roomName) || roomName.includes(loc) || loc.includes(String(room.id));
+  };
+
+  // 🟢 รายการแจ้งเตือนชำรุดของห้องที่กำลังเลือก (ยังไม่แก้ไข)
+  const roomDamages = useMemo(() => {
+    return publicPosts.filter(
+      p => p.category === 'DAMAGED' && !p.resolved && isPostRelatedToRoom(p, selectedRoom)
+    );
+  }, [publicPosts, selectedRoom]);
+
+  // 🟢 รายการแจ้งปิดปรับปรุงของห้องที่กำลังเลือก (ยังไม่แก้ไข)
+  const roomMaintenances = useMemo(() => {
+    return publicPosts.filter(
+      p => p.category === 'MAINTENANCE' && !p.resolved && isPostRelatedToRoom(p, selectedRoom)
+    );
+  }, [publicPosts, selectedRoom]);
+
+  // 🟢 เด้งแจ้งเตือนทันทีเมื่อเลือกห้องที่ปิดปรับปรุง
+  useEffect(() => {
+    if (!selectedRoom) return;
+    if (alertedRoomRef.current === selectedRoom.id) return; // แจ้งไปแล้วสำหรับห้องนี้ ไม่ต้องแจ้งซ้ำ
+    if (roomMaintenances.length === 0) return;
+
+    alertedRoomRef.current = selectedRoom.id; // กันเด้งซ้ำตอน auto-refresh publicPosts ทุก 5 วิ
+
+    const todayStr = formatDateISO(new Date());
+    const activeMaintenance =
+      roomMaintenances.find(m => {
+        if (!m.startDate && !m.endDate) return true;
+        const start = m.startDate ? formatDateISO(new Date(m.startDate)) : '1970-01-01';
+        const end = m.endDate ? formatDateISO(new Date(m.endDate)) : '2099-12-31';
+        return todayStr >= start && todayStr <= end;
+      }) || roomMaintenances[0];
+
+    Swal.fire({
+      title: `⚠️ ห้อง ${selectedRoom.name} ปิดปรับปรุง`,
+      html: `
+        <div class="text-left text-sm space-y-2 p-1 text-slate-700">
+          <p><b>หัวข้อ:</b> ${activeMaintenance.title}</p>
+          <p><b>รายละเอียด:</b> ${activeMaintenance.message}</p>
+          ${activeMaintenance.startDate || activeMaintenance.endDate ? `
+            <p class="text-xs text-amber-700 font-semibold">
+              📅 ช่วงเวลาปิด: ${formatDateTH(activeMaintenance.startDate || '')} - ${formatDateTH(activeMaintenance.endDate || '')}
+            </p>
+          ` : ''}
+        </div>
+      `,
+      icon: 'warning',
+      confirmButtonColor: '#64748b',
+      confirmButtonText: 'รับทราบ',
+      heightAuto: false,
+    });
+  }, [selectedRoom, roomMaintenances]);
+
+  // 🟢 ตรวจสอบว่าวันที่ dateStr อยู่ในช่วงปิดปรับปรุงหรือไม่
+  const getMaintenanceForDate = (dateStr: string): PublicPost | undefined => {
+    return roomMaintenances.find(m => {
+      if (!m.startDate && !m.endDate) return true; // ถ้าไม่ได้ระบุวัน = ปิดต่อเนื่อง
+      const start = m.startDate ? formatDateISO(new Date(m.startDate)) : '1970-01-01';
+      const end = m.endDate ? formatDateISO(new Date(m.endDate)) : '2099-12-31';
+      return dateStr >= start && dateStr <= end;
+    });
+  };
+
   const handleConnectLine = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("lineUserId");
@@ -203,11 +303,11 @@ export default function UserBookingPage() {
     window.location.href = `${API}/auth/line`;
   };
 
-  const getAdminSchedule = (day: string, period: number) => {
+  const getAdminSchedule = (day: string, period: string) => {
     return adminSchedules.find(s => s.day === day && s.period === period);
   };
 
-  const getUserBooking = (dateStr: string, period: number) => {
+  const getUserBooking = (dateStr: string, period: string) => {
     return userBookings.find(b => b.date === dateStr && b.period === period);
   };
 
@@ -236,34 +336,46 @@ export default function UserBookingPage() {
           if (selectedRoom) fetchFullSchedule(selectedRoom.id, false);
           Swal.fire({
             title: 'ยกเลิกการจองสำเร็จ!',
-            text: 'ระบบได้ส่งการ์ดแจ้งเตือนการยกเลิกไปยัง LINE เรียบร้อยแล้ว',
             icon: 'success',
             timer: 1500,
             showConfirmButton: false,
             heightAuto: false,
           });
-        } else {
-          const err = await res.json();
-          Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: err.message || 'ไม่สามารถยกเลิกการจองได้',
-            icon: 'error',
-            heightAuto: false,
-          });
         }
       } catch {
-        Swal.fire({
-          title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
-          icon: 'error',
-          heightAuto: false,
-        });
+        Swal.fire({ title: 'เกิดข้อผิดพลาด', icon: 'error', heightAuto: false });
       }
     }
   };
 
-  const handleSlotClick = (day: string, dateStr: string, period: number) => {
-    if (period === 3) return;
+  // 🟢 จัดการเมื่อคลิกที่ช่องเวลา
+  const handleSlotClick = (day: string, dateStr: string, period: string) => {
+    // 1. เช็กว่าห้องปิดปรับปรุงในวันนี้หรือไม่
+    const maintenance = getMaintenanceForDate(dateStr);
+    if (maintenance) {
+      Swal.fire({
+        title: '⚠️ ห้องปิดปรับปรุง',
+        html: `
+          <div class="text-left text-sm space-y-2 p-1 text-slate-700">
+            <p><b>หัวข้อ:</b> ${maintenance.title}</p>
+            <p><b>รายละเอียด:</b> ${maintenance.message}</p>
+            ${maintenance.startDate || maintenance.endDate ? `
+              <p class="text-xs text-amber-700 font-semibold">
+                📅 ช่วงเวลาปิด: ${formatDateTH(maintenance.startDate || '')} - ${formatDateTH(maintenance.endDate || '')}
+              </p>
+            ` : ''}
+            <p class="text-xs text-rose-600 font-bold mt-2">🚫 ไม่สามารถทำการจองห้องเรียนในช่วงเวลานี้ได้</p>
+          </div>
+        `,
+        icon: 'warning',
+        confirmButtonColor: '#64748b',
+        confirmButtonText: 'รับทราบ',
+        heightAuto: false,
+      });
+      return;
+    }
 
+    // 2. เช็กว่าติดคาบเรียนประจำหรือไม่
     const adminItem = getAdminSchedule(day, period);
     if (adminItem) {
       Swal.fire({
@@ -282,10 +394,10 @@ export default function UserBookingPage() {
       return;
     }
 
+    // 3. เช็กว่ามีการจองแล้วหรือไม่
     const bookingItem = getUserBooking(dateStr, period);
     if (bookingItem) {
       const isApproved = bookingItem.status === 'APPROVED';
-
       const isMyBooking = currentUser && (
         (bookingItem.userId !== undefined && String(bookingItem.userId) === String(currentUser.id)) ||
         (bookingItem.userName && currentUser.name && bookingItem.userName.trim() === currentUser.name.trim())
@@ -310,17 +422,17 @@ export default function UserBookingPage() {
           handleCancelBooking(bookingItem.id, bookingItem.userName);
         }
       });
-
       return;
     }
 
+    // 4. ช่องว่าง (รวมถึงคาบที่ 3) -> เปิด Modal จองได้ทันที!
     setTargetSlot({ day, date: dateStr, period });
     setIsModalOpen(true);
   };
 
   const handleSubmitBooking = async () => {
     if (!currentUser || !currentUser.name || !purpose.trim() || !selectedRoom || !targetSlot) {
-      Swal.fire({title: "กรุณากรอกข้อมูลให้ครบถ้วน", icon: "warning", timer: 1200, showConfirmButton: false, heightAuto: false,});
+      Swal.fire({ title: "กรุณากรอกข้อมูลให้ครบถ้วน", icon: "warning", timer: 1200, showConfirmButton: false, heightAuto: false });
       return;
     }
 
@@ -355,10 +467,10 @@ export default function UserBookingPage() {
         });
       } else {
         const errData = await res.json();
-        Swal.fire({title: "เกิดข้อผิดพลาด",text: errData.message || 'ไม่สามารถจองได้', icon: "error", timer: 1200, showConfirmButton: false, heightAuto: false,});
+        Swal.fire({ title: "เกิดข้อผิดพลาด", text: errData.message || 'ไม่สามารถจองได้', icon: "error", timer: 1200, showConfirmButton: false, heightAuto: false });
       }
     } catch {
-      Swal.fire({title: "เกิดข้อผิดพลาดในการเชื่อมต่อ", icon: "error", timer: 1200, showConfirmButton: false, heightAuto: false,});
+      Swal.fire({ title: "เกิดข้อผิดพลาดในการเชื่อมต่อ", icon: "error", timer: 1200, showConfirmButton: false, heightAuto: false });
     }
   };
 
@@ -367,21 +479,22 @@ export default function UserBookingPage() {
       <div className="max-w-[1300px] mx-auto space-y-6">
         
         {/* Header และ แถบตัวกรอง */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">ตารางใช้ห้องเรียน / จองห้อง</h1>
-            <p className="text-sm text-slate-500 mt-1">แสดงข้อมูลตารางเรียนประจำ และ รายการจองห้อง</p>
+            <h1 className="text-xl font-bold text-slate-800">ตารางใช้ห้องเรียน / จองห้อง</h1>
+            <p className="text-xs text-slate-500 mt-1">แสดงข้อมูลตารางเรียนประจำ รายการจองห้อง</p>
+            <p className="text-xs text-slate-500 mt-1">และสถานะห้องเรียน</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             
             {/* 🏢 1. อาคาร */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-700">อาคาร:</span>
+              <span className="text-xs font-bold text-slate-700">อาคาร:</span>
               <select
                 value={selectedBuilding}
                 onChange={(e) => setSelectedBuilding(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="px-3 py-2 rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 <option value="ALL">ทุกอาคาร</option>
                 {buildingList.map(b => (
@@ -392,11 +505,11 @@ export default function UserBookingPage() {
 
             {/* 🏫 2. หมวดหมู่ */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-700">หมวดหมู่:</span>
+              <span className="text-xs font-bold text-slate-700">หมวดหมู่:</span>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="px-3 py-2 rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 <option value="ALL">ทุกหมวดหมู่</option>
                 <option value="GENERAL">ห้องเรียนทั่วไป</option>
@@ -406,14 +519,14 @@ export default function UserBookingPage() {
 
             {/* 🚪 3. ห้อง */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-700">ห้อง:</span>
+              <span className="text-xs font-bold text-slate-700">ห้อง:</span>
               <select
                 value={selectedRoom?.id || ''}
                 onChange={(e) => {
                   const r = rooms.find(item => item.id === Number(e.target.value));
                   if (r) setSelectedRoom(r);
                 }}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="px-4 py-2 rounded-2xl border border-slate-200 bg-white font-bold text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 {filteredRooms.length === 0 ? (
                   <option value="">ไม่พบห้อง</option>
@@ -427,7 +540,7 @@ export default function UserBookingPage() {
               </select>
             </div>
 
-            {/* 📅 แสดงช่วงสัปดาห์ (7 วัน) */}
+            {/* 📅 แสดงช่วงสัปดาห์ */}
             <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
               <button
                 onClick={() => setCurrentMonday(addDays(currentMonday, -7))}
@@ -460,18 +573,64 @@ export default function UserBookingPage() {
           </div>
         </div>
 
-        {/* ตารางจอง 7 วัน */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        {/* 🟢 📢 การ์ดแจ้งเตือนประชาสัมพันธ์สำหรับห้องนี้ (ห้องชำรุด / ปิดปรับปรุง) */}
+        {(roomDamages.length > 0 || roomMaintenances.length > 0) && (
+          <div className="space-y-2">
+
+            {/* แถบแจ้งเตือนปิดปรับปรุง */}
+            {roomMaintenances.map((m) => (
+              <div key={m.id} className="px-4 py-3 rounded-2xl bg-slate-800 border border-slate-700 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold text-rose-300 shrink-0">
+                    ปิดปรับปรุงห้อง {selectedRoom?.name}
+                  </span>
+                  <span className="text-sm font-semibold text-white truncate">{m.title}</span>
+                  <span className="text-xs text-slate-400 truncate hidden sm:inline">— {m.message}</span>
+                </div>
+                {(m.startDate || m.endDate) && (
+                  <span className="text-[11px] text-slate-300 flex items-center gap-1 shrink-0">
+                    <CalendarDays className="w-3.5 h-3.5" />
+                    {formatDateTH(m.startDate || '')} - {formatDateTH(m.endDate || '')}
+                  </span>
+                )}
+              </div>
+            ))}
+
+            {/* แถบแจ้งเตือนห้องชำรุด */}
+            {roomDamages.map((d) => (
+              <div key={d.id} className="px-4 py-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                  <Wrench className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold text-rose-600 shrink-0">ห้องชำรุด</span>
+                  <span className="text-sm font-semibold text-slate-800 truncate">{d.title}</span>
+                  <span className="text-xs text-slate-500 truncate hidden sm:inline">— {d.message}</span>
+                </div>
+                {d.location && (
+                  <span className="text-[11px] text-slate-500 shrink-0">📍 {d.location}</span>
+                )}
+              </div>
+            ))}
+
+          </div>
+        )}
+
+        {/* 📋 ตารางจอง 7 วัน */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="table-fixed w-full border-collapse min-w-[950px]">
               <thead>
                 <tr>
-                  <th className="bg-slate-800 text-white px-4 py-3 text-sm font-semibold w-28 text-center sticky left-0 z-10">วัน / คาบ</th>
+                  <th className="bg-slate-800 text-white px-4 py-3.5 text-xs font-bold w-28 text-center sticky left-0 z-10">วัน / คาบ</th>
                   {periods.map((p, inx) => (
-                    <th key={p} className="bg-slate-800 text-white px-2 py-3 text-center text-xs font-semibold min-w-[95px]">
-                      <div>{getPeriodTitle(p)}</div>
-                      <div className="mt-1">{time[inx]}</div>
-                      <div className="mt-1">{Shortentime[inx]}</div>
+                    <th key={p} className="bg-slate-800 text-white px-2 py-3.5 text-center text-xs font-semibold min-w-[95px]">
+                      <div className="font-bold">{getPeriodTitle(p)}</div>
+                      <div className="mt-1 text-[11px] text-slate-300 font-normal">{time[inx]}</div>
+                      <div className="mt-0.5 text-[10px] text-slate-400 font-normal">{Shortentime[inx]}</div>
                     </th>
                   ))}
                 </tr>
@@ -481,40 +640,52 @@ export default function UserBookingPage() {
                   [...Array(7)].map((_, i) => (
                     <tr key={i} className="animate-pulse border-b border-slate-100">
                       <td className="p-4 bg-slate-100"></td>
-                      {periods.map(p => <td key={p} className="p-2"><div className="h-12 bg-slate-100 rounded-lg"></div></td>)}
+                      {periods.map(p => <td key={p} className="p-2"><div className="h-14 bg-slate-100 rounded-2xl"></div></td>)}
                     </tr>
                   ))
                 ) : (
                   days.map((day, dayIdx) => {
                     const dateObj = addDays(currentMonday, dayIdx);
                     const dateStr = formatDateISO(dateObj);
+                    
+                    // 🟢 เช็กว่าวันนี้ห้องปิดปรับปรุงหรือไม่
+                    const maintenanceToday = getMaintenanceForDate(dateStr);
 
                     return (
                       <tr key={day} className="border-b border-slate-100 last:border-b-0">
-                        <td className="bg-slate-700 text-white px-3 py-3 text-center font-semibold text-xs sticky left-0 z-10">
+                        <td className="bg-slate-700 text-white px-3 py-3.5 text-center font-bold text-xs sticky left-0 z-10">
                           <div>{day}</div>
                           <div className="text-[10px] text-slate-300 font-normal mt-0.5">{formatDateTH(dateObj)}</div>
                         </td>
 
                         {periods.map(p => {
-                          const isBreak = p === 3;
-
-                          if (isBreak) {
+                          // 🟢 1. ถ้าวันนี้ปิดปรับปรุง -> บล็อกทั้งแถวตามช่วงวันที่ประชาสัมพันธ์
+                          if (maintenanceToday) {
                             return (
-                              <td key={p} className="p-1.5 text-center bg-amber-50/70 cursor-not-allowed select-none">
-                                <div className="h-18 rounded-xl border border-amber-200/80 p-1 flex flex-col items-center justify-center bg-amber-50 text-amber-700 shadow-2xs">
-                                  <span className="font-semibold text-xs flex items-center gap-1">พัก 30</span>
+                              <td 
+                                key={p} 
+                                onClick={() => handleSlotClick(day, dateStr, p)}
+                                className="p-1.5 text-center cursor-pointer"
+                              >
+                                <div className="h-18 rounded-2xl border border-slate-300 bg-slate-100/90 text-slate-600 p-1 flex flex-col items-center justify-center shadow-2xs hover:bg-slate-200 transition-colors">
+                                  <span className="font-bold text-[11px] flex items-center gap-1 text-slate-700">
+                                    ⚠️ ปิดปรับปรุง
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 truncate w-full mt-0.5">
+                                    {maintenanceToday.title}
+                                  </span>
                                 </div>
                               </td>
                             );
                           }
 
+                          // 🟢 2. วันปกติ
                           const adminItem = getAdminSchedule(day, p);
                           const bookingItem = getUserBooking(dateStr, p);
 
-                          let bgStyle = "bg-emerald-50/60 hover:bg-emerald-100 border-emerald-200/80 text-emerald-800 cursor-pointer";
+                          let bgStyle = "bg-emerald-50/70 hover:bg-emerald-100 border-emerald-200/80 text-emerald-800 cursor-pointer";
                           let titleText = "🟢 ว่าง";
-                          let subText = "คลิกจอง";
+                          let subText = p === "พัก 30" ? "คลิกจอง (พัก 30)" : "คลิกจอง";
 
                           if (adminItem) {
                             bgStyle = "bg-indigo-100/80 border-indigo-300 text-indigo-900 cursor-pointer hover:bg-indigo-200";
@@ -534,9 +705,9 @@ export default function UserBookingPage() {
 
                           return (
                             <td key={p} onClick={() => handleSlotClick(day, dateStr, p)} className="p-1.5 text-center">
-                              <div className={`h-18 rounded-xl border p-1 flex flex-col items-center justify-center transition-all duration-150 shadow-2xs ${bgStyle}`}>
+                              <div className={`h-18 rounded-2xl border p-1 flex flex-col items-center justify-center transition-all duration-150 shadow-2xs ${bgStyle}`}>
                                 <span className="font-bold text-xs truncate w-full">{titleText}</span>
-                                {subText && <span className="text-[13px] opacity-80 truncate w-full mt-0.5">{subText}</span>}
+                                {subText && <span className="text-[12px] opacity-80 truncate w-full mt-0.5">{subText}</span>}
                               </div>
                             </td>
                           );
@@ -550,12 +721,12 @@ export default function UserBookingPage() {
           </div>
         </div>
 
-        {/* Modal จอง */}
+        {/* 📝 Modal จองห้อง */}
         {isModalOpen && targetSlot && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
               <div className="bg-emerald-600 px-6 py-4 text-white">
-                <h3 className="font-bold text-lg">📝 ส่งคำขอจองห้อง</h3>
+                <h3 className="font-bold text-base">📝 ส่งคำขอจองห้อง</h3>
                 <p className="text-xs text-emerald-100 mt-0.5">
                   ห้อง: {selectedRoom?.name} {selectedRoom?.building ? `(${selectedRoom.building})` : ''} | วัน{targetSlot.day} ({targetSlot.date}) | {getPeriodTitle(targetSlot.period)}
                 </p>
@@ -564,7 +735,7 @@ export default function UserBookingPage() {
               <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">ผู้ขอจอง (บัญชีปัจจุบัน)</label>
-                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-800 font-semibold text-sm flex items-center justify-between">
+                  <div className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 font-semibold text-xs flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
                         {currentUser?.name ? currentUser.name.charAt(0) : 'U'}
@@ -574,7 +745,7 @@ export default function UserBookingPage() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 space-y-3">
+                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-3">
                   <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <span>🔔</span> ข้อมูลสำหรับรับการแจ้งเตือน
                   </div>
@@ -585,7 +756,7 @@ export default function UserBookingPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="0812345678"
-                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs"
                     />
                   </div>
 
@@ -621,6 +792,21 @@ export default function UserBookingPage() {
                         เชื่อมต่อ LINE เพื่อรับแจ้งเตือน
                       </button>
                     )}
+
+                    {/* 🟢 QR Code สำหรับ Add Friend LINE OA */}
+                    <div className="mt-3 p-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-2">
+                      <span className="text-[11px] font-semibold text-slate-600">
+                        📷 สแกนเพื่อเพิ่มเพื่อน LINE OA (รับแจ้งเตือนสถานะการจอง)
+                      </span>
+                      <QRCodeSVG
+                        value={process.env.NEXT_PUBLIC_LINE_OA_URL || "https://line.me/R/ti/p/@yourlineoaid"}
+                        size={120}
+                        bgColor="#ffffff"
+                        fgColor="#0f172a"
+                        level="M"
+                      />
+                    </div>
+
                   </div>
 
                 </div>
@@ -632,16 +818,23 @@ export default function UserBookingPage() {
                     onChange={(e) => setPurpose(e.target.value)}
                     placeholder="เช่น สอนชดเชย, ประชุมกลุ่ม"
                     rows={3}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm"
+                    className="w-full px-3.5 py-2 rounded-2xl border border-slate-200 text-xs"
+                    required
                   ></textarea>
                 </div>
               </div>
 
               <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-white border border-slate-200">
+                <button 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100"
+                >
                   ยกเลิก
                 </button>
-                <button onClick={handleSubmitBooking} className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700">
+                <button 
+                  onClick={handleSubmitBooking} 
+                  className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md"
+                >
                   ส่งคำขอจอง
                 </button>
               </div>

@@ -9,7 +9,8 @@ export default function Register () {
     const [ email, setEmail ] = useState("");
     const [ password, setPassword ] = useState("");
     const [ name, setName ] = useState("");
-    const [ branch, setBranch ] = useState("");
+    const [ branch, setBranch ] = useState("การบัญชี");
+    const [ customBranch, setCustomBranch ] = useState(""); // 🟢 State สำหรับกรอกแผนกเอง
     const [ surepassword, setSurePassword ] = useState("");
     const [ loading, setLoading ] = useState(false);
     const router = useRouter();
@@ -17,6 +18,20 @@ export default function Register () {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
+
+        // หาค่าแผนกที่แท้จริง (ถ้าเลือก อื่นๆ ให้ใช้ค่าที่พิมพ์เอง)
+        const finalBranch = branch === "OTHER" ? customBranch.trim() : branch;
+
+        if (!finalBranch) {
+            setLoading(false);
+            await Swal.fire({
+                title: "ข้อมูลไม่ครบถ้วน",
+                text: "กรุณาระบุชื่อแผนก/สาขาวิชาของคุณ",
+                icon: "warning",
+                confirmButtonColor: "#f472b6",
+            });
+            return;
+        }
 
         if ( password !== surepassword ) {
             setLoading(false);
@@ -35,7 +50,12 @@ export default function Register () {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/create`, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name, branch }),
+                body: JSON.stringify({ 
+                    email, 
+                    password, 
+                    name, 
+                    branch: finalBranch // 🟢 ส่ง finalBranch ไปยัง Backend
+                }),
             });
 
             if (!res.ok) {
@@ -48,7 +68,7 @@ export default function Register () {
                 text: 'สร้างบัญชีเรียบร้อยแล้ว',
                 icon: 'success',
                 confirmButtonText: 'ตกลง',
-                confirmButtonColor: '#f472b6',
+                confirmButtonColor: "#f472b6",
                 scrollbarPadding: false,
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -65,18 +85,23 @@ export default function Register () {
                     icon: "error",
                     confirmButtonColor: "#f472b6",
                 });
+            } else {
+                await Swal.fire({
+                    title: "เกิดข้อผิดพลาด",
+                    text: err.message || "ไม่สามารถสร้างบัญชีได้",
+                    icon: "error",
+                    confirmButtonColor: "#f472b6",
+                });
             }
 
         } finally {
-
             setLoading(false);
-
         }
     }
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gray-300 p-4">
-            <div className="w-full max-w-md relative bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-sky-200/30border border-white">
+            <div className="w-full max-w-md relative bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-sky-200/30 border border-white">
 
                 <form
                     onSubmit={handleSubmit}
@@ -130,7 +155,7 @@ export default function Register () {
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="รหัสผ่าน"
                             required
-                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-sky-100 focus:border-black focus:ring-2 focus:ring-sky-200 outline-none transition-all placeholder:text-gray-400 text-smm"
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-sky-100 focus:border-black focus:ring-2 focus:ring-sky-200 outline-none transition-all placeholder:text-gray-400 text-sm"
                         />
                     </div>
 
@@ -146,28 +171,46 @@ export default function Register () {
                         />
                     </div>
 
-                    <div className="flex flex-row">
-                        <BriefcaseBusiness className="mt-2 ml-3 text-black" size={18} />
-                        <span className="mt-1 ml-1 text-black">แผนก</span>
-                        <select
-                            value={branch}
-                            onChange={(e) => setBranch(e.target.value)}
-                            className="px-3 py-2 ml-4 rounded-xl w-full border border-slate-200 bg-white font-medium text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        >
-                            <option value="การบัญชี">การบัญชี</option>
-                            <option value="คอมพิวเตอร์ธุรกิจ">คอมพิวเตอร์ธุรกิจ</option>
-                            <option value="คอมพิวเตอร์กราฟิกฯ">คอมพิวเตอร์กราฟิกฯ</option>
-                            <option value="การตลาด">การตลาด</option>
-                            <option value="การจัดการโลจิสติกส์">การจัดการโลจิสติกส์</option>
-                            <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
-                            <option value="สามัญแกนธุรกิจ">สามัญแกนธุรกิจ</option>
-                        </select>
+                    {/* 🟢 ส่วนเลือกแผนก / สาขา */}
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-row items-center">
+                            <BriefcaseBusiness className="ml-1 text-gray-500" size={18} />
+                            <span className="ml-2 text-black text-sm font-medium">แผนก</span>
+                            <select
+                                value={branch}
+                                onChange={(e) => setBranch(e.target.value)}
+                                className="px-3 py-2.5 ml-3 rounded-xl w-full border border-slate-200 bg-white font-medium text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200 cursor-pointer"
+                            >
+                                <option value="การบัญชี">การบัญชี</option>
+                                <option value="คอมพิวเตอร์ธุรกิจ">คอมพิวเตอร์ธุรกิจ</option>
+                                <option value="คอมพิวเตอร์กราฟิกฯ">คอมพิวเตอร์กราฟิกฯ</option>
+                                <option value="การตลาด">การตลาด</option>
+                                <option value="การจัดการโลจิสติกส์">การจัดการโลจิสติกส์</option>
+                                <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                                <option value="สามัญแกนธุรกิจ">สามัญแกนธุรกิจ</option>
+                                <option value="OTHER">➕ อื่นๆ (ระบุเอง)</option>
+                            </select>
+                        </div>
+
+                        {/* 🟢 ช่องกรอกข้อความเมื่อเลือก "อื่นๆ (ระบุเอง)" */}
+                        {branch === "OTHER" && (
+                            <div className="mt-1 animate-in fade-in duration-200">
+                                <input
+                                    type="text"
+                                    value={customBranch}
+                                    onChange={(e) => setCustomBranch(e.target.value)}
+                                    placeholder="ระบุแผนก/สาขาวิชาของคุณ เช่น การตลาดดิจิทัล"
+                                    required
+                                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-sky-200 focus:border-black focus:ring-2 focus:ring-sky-200 outline-none transition-all placeholder:text-gray-400 text-sm"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="mt-2 w-full py-3 rounded-xl bg-black text-white font-medium shadow-md shadow-sky-200 hover:shadow-lg hover:shadow-sky-300 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:hover:scale-100"
+                        className="mt-2 w-full py-3 rounded-xl bg-black text-white font-medium shadow-md shadow-sky-200 hover:shadow-lg hover:shadow-sky-300 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:hover:scale-100 cursor-pointer"
                     >
                         {loading ? "กำลังสร้างบัญชี..." : "สร้างบัญชี"}
                     </button>
@@ -182,14 +225,14 @@ export default function Register () {
 
                 </form>
 
-                <button className="flex m-auto">
+                <div className="flex justify-center px-8 pb-6">
                     <a
                         href="http://localhost:4000/users/google"
-                        className="flex items-center justify-center gap-3 w-100 py-2.5 px-4 bg-white text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm mb-4"
+                        className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-white text-gray-700 font-medium border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
-                                    fill="#4285F4"
+                                fill="#4285F4"
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                             />
                             <path
@@ -205,11 +248,9 @@ export default function Register () {
                                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                             />
                         </svg>
-
                         <span>เข้าสู่ระบบด้วย Google</span>
-
                     </a>
-                </button>
+                </div>
             </div>
         </div>
     )

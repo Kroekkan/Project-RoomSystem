@@ -101,6 +101,7 @@ export default function Login () {
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="อีเมล"
                             className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-sky-100 focus:border-black focus:ring-2 focus:ring-sky-200 outline-none transition-all placeholder:text-gray-400 text-sm"
+                            required
                         />
                     </div>
 
@@ -112,6 +113,7 @@ export default function Login () {
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="รหัสผ่าน"
                             className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-sky-100 focus:border-black focus:ring-2 focus:ring-sky-200 outline-none transition-all placeholder:text-gray-400 text-sm"
+                            required
                         />
                     </div>
 

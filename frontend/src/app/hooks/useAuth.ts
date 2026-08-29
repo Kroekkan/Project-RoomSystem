@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 
 interface User {
-    id: Number;
-    name: String;
-    email: String;
-    branch: String;
-    role?: String;
+    id: number;
+    name: string;
+    email: string;
+    branch: string;
+    role?: string;
+    background: string;
+    navbar: string;
+    header: string;
 }
 
 export function useAuth () {

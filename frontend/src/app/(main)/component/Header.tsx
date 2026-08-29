@@ -10,7 +10,12 @@ export function Header() {
     const { handleLogout } = useLogout();
   
   return (
-    <header className="sticky top-0 z-50 bg-[#343a40] h-16 flex items-center px-4 justify-between shadow-xl">
+    <header 
+      className={`sticky top-0 z-50 h-16 flex items-center px-4 justify-between shadow-xl`}
+      style={{
+        backgroundColor: user?.header || "#343a40",
+      }}
+    >
       <h1 className="text-white text-lg font-bold">Roomify</h1>
 
     {isLoading ? (
