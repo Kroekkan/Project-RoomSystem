@@ -20,7 +20,7 @@ export default function Manage_users() {
     useEffect(() => {
         async function checkUser() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/checkuser`, {
+                const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/checkuser`, {
                     method: "GET",
                 });
             
@@ -95,7 +95,7 @@ export default function Manage_users() {
 
         if (formValues) {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}`, {
+                const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/${user.id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(formValues),
@@ -132,7 +132,7 @@ export default function Manage_users() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+                    const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/${id}`, {
                         method: "DELETE",
                     });
 

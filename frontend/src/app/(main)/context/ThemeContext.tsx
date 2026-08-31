@@ -85,7 +85,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const saveTheme = async (c: ThemeColors) => {
     if (user) {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/theme`, {
+      await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/me/theme`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -99,7 +99,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const resetTheme = async () => {
     setColors(defaultTheme);
     if (user) {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/theme`, {
+      await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/me/theme`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

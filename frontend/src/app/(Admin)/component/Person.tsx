@@ -23,7 +23,7 @@ interface Booking {
   createdAt: string;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API = process.env.NEXT_CONFIG_API_URL;
 
 export function Person() {
   const { user } = useAuth();
