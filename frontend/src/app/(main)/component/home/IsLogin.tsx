@@ -22,11 +22,11 @@ const BRANCH_OPTIONS = [
 ];
 
 export function IsLogin() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
   // ตรวจสอบว่ามี branch หรือยัง (ถ้าไม่มี, เป็นค่าว่าง, หรือเป็น '-')
-  const needsBranch = !user?.branch || user.branch.trim() === '' || user.branch === 'กรุณาใส่สาขา';
+  const needsBranch =!isLoading && !! user &&(!user.branch || user.branch.trim() === '' || user.branch === 'กรุณาใส่สาขา');
 
   const [selectedBranch, setSelectedBranch] = useState("");
   const [customBranch, setCustomBranch] = useState("");

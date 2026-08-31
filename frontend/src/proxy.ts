@@ -16,60 +16,121 @@ const adminPaths = [
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // หน้าแรก
-  if (pathname === '/') {
-    return NextResponse.next();
-  }
+  // ==========================================
+  // ดึง JWT
+  // ==========================================
+  const token = request.cookies.get('access_token')?.value;
 
+
+  // ==========================================
   // หน้า Login / Register
+  // ==========================================
   const isPublic = publicPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
+    (path) =>
+      pathname === path ||
+      pathname.startsWith(path + '/')
   );
 
   if (isPublic) {
     return NextResponse.next();
   }
 
-  // ดึง JWT
-  const token = request.cookies.get('access_token')?.value;
 
-  // ไม่มี token → Login
-  if (!token) {
-    return NextResponse.redirect(new URL('/Login', request.url));
+  // ==========================================
+  // หน้าแรก /
+  // ==========================================
+  if (pathname === '/') {
+
+    // ยังไม่ได้ Login → ไป Login
+    if (!token) {
+      return NextResponse.redirect(
+        new URL('/Login', request.url)
+      );
+    }
+
+    // มี Token → เข้า Homepage ได้
+    try {
+      const secret = new TextEncoder().encode(
+        process.env.JWT_SECRET
+      );
+
+      await jwtVerify(token, secret);
+
+      return NextResponse.next();
+
+    } catch (error) {
+      console.error('JWT verification failed:', error);
+
+      // Token หมดอายุ / ไม่ถูกต้อง
+      return NextResponse.redirect(
+        new URL('/Login', request.url)
+      );
+    }
   }
 
+
+  // ==========================================
+  // หน้าอื่น ๆ ที่ต้อง Login
+  // ==========================================
+
+  // ไม่มี Token → Login
+  if (!token) {
+    return NextResponse.redirect(
+      new URL('/Login', request.url)
+    );
+  }
+
+
+  // ==========================================
   // ตรวจสอบว่าเป็นหน้า Admin หรือไม่
+  // ==========================================
+
   const isAdminPath = adminPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
+    (path) =>
+      pathname === path ||
+      pathname.startsWith(path + '/')
   );
 
-  // ถ้าไม่ใช่หน้า Admin → ผ่านได้
+
+  // ไม่ใช่หน้า Admin → ผ่าน
   if (!isAdminPath) {
     return NextResponse.next();
   }
 
+
+  // ==========================================
+  // ตรวจสอบ JWT + Role
+  // ==========================================
+
   try {
-    // ต้องใช้ secret เดียวกับ NestJS
     const secret = new TextEncoder().encode(
       process.env.JWT_SECRET
     );
 
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(
+      token,
+      secret
+    );
 
     const role = payload.role;
 
-    // ไม่ใช่ Admin → ห้ามเข้า
+
+    // ไม่ใช่ Admin → กลับหน้าแรก
     if (role !== 'ADMIN') {
       return NextResponse.redirect(
         new URL('/', request.url)
       );
     }
 
+
     // เป็น Admin → ผ่าน
     return NextResponse.next();
 
   } catch (error) {
-    console.error('JWT verification failed:', error);
+    console.error(
+      'JWT verification failed:',
+      error
+    );
 
     // Token ไม่ถูกต้อง / หมดอายุ
     return NextResponse.redirect(
@@ -77,6 +138,7 @@ export async function proxy(request: NextRequest) {
     );
   }
 }
+
 
 export const config = {
   matcher: [

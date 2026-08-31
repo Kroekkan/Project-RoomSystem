@@ -10,7 +10,6 @@ import {
   Columns3Cog,
   ChevronLeft,
   ChevronRight,
-  Settings,
   LogIn,
   LogOut,
   CircleUserRound,
@@ -28,7 +27,6 @@ const menuTop = [
 
 const menuButton = [
   { name: "หน้า User", icon: MoveLeft, href: "/" },
-  { name: "ตั้งค่า", icon: Settings, href: "/Setting_Admin" }
 ];
 
 export function Navbar_Admin() {
@@ -45,7 +43,7 @@ export function Navbar_Admin() {
           <Link
             key={item.name}
             href={item.href}
-            className="flex items-center gap-4 top-3 text-gray-400 px-3 py-3 rounded-lg hover:bg-gray-800 hover:text-white transition-colors duration-500 relative group overflow-hidden"
+            className="flex items-center gap-4 top-3 text-app-navbar-text px-3 py-3 rounded-lg hover:bg-app-navbar-hover hover:text-app-navbar-text transition-colors duration-500 relative group overflow-hidden"
           >
             <Icon size={25} className="shrink-0 my-1" />
             <span
@@ -63,13 +61,13 @@ export function Navbar_Admin() {
 
   return (
     <aside
-      className={`relative h-full bg-gray-900 text-gray-200 flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
+      className={`relative h-full bg-app-navbar text-app-navbar-text flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
                 ${fold ? "w-15" : "w-55"}`}
     >
       <div className={`absolute inset-y-0 right-0`}>
         <button
           onClick={() => setFold(!fold)}
-          className={`w-10 h-20 z-10 absolute top-1/2 -right-5 items-center p-2 rounded-lg bg-gray-800 hover:bg-gray-800 transition-all duration-1000 cursor-pointer
+          className={`w-10 h-20 z-10 absolute top-1/2 -right-5 items-center p-2 rounded-lg bg-app-navbar-hover text-app-navbar-text hover:opacity-80 transition-all duration-1000 cursor-pointer
                             ${fold ? "ml-14" : "ml-[14.5rem]"}
                         `}
         >
@@ -81,13 +79,13 @@ export function Navbar_Admin() {
 
       {isLoading ? (
         <></>
-      ) : user ? (
+      ) : (
         <div className="flex flex-col mt-auto mb-4">
           {renderMenu(menuButton)}
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-4 top-3 text-gray-400 px-3 py-3 rounded-lg hover:bg-gray-800 hover:text-white transition-colors duration-500 relative group overflow-hidden"
+            className="flex items-center gap-4 top-3 text-app-navbar-text px-3 py-3 rounded-lg hover:bg-app-navbar-hover hover:text-white transition-colors duration-500 relative group overflow-hidden"
           >
             <LogOut size={25} className="shrink-0 my-1" />
             <span
@@ -97,23 +95,6 @@ export function Navbar_Admin() {
                 ออกจาหระบบ
             </span>
           </button>
-        </div>
-      ) : (
-        <div className="flex flex-col mt-auto mb-6 px-2">
-          <Link
-            key={"login"}
-            href={"/Login"}
-            className="flex items-center gap-4 top-3 text-white px-3 py-3 bg-blue-500 shadow-lg shadow-blue-500/50 rounded-lg hover:bg-white hover:text-black transition-colors duration-700 relative group overflow-hidden"
-          >
-            <LogIn size={25} className="shrink-0 my-1 " />
-            <span
-              className={`text-xl font-medium whitespace-nowrap transition-all duration-700 ease-in-out
-                                ${fold ? "opacity-0 w-0 -translate-x-2" : "opacity-100 w-auto translate-x-0"}
-                                `}
-            >
-              เข้าสู้ระบบ
-            </span>
-          </Link>
         </div>
       )}
     </aside>

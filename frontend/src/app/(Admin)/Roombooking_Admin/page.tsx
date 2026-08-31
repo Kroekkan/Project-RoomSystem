@@ -466,7 +466,7 @@ export default function SchedulePage() {
     };
 
     return (
-        <div className="h-170 bg-gradient-to-br from-slate-50 to-slate-100 flex">
+        <div className="h-170 bg-app-bg flex">
 
             {/* Sidebar ด้านซ้าย */}
             <aside className="w-80 h-auto bg-white border-l border-slate-200 flex flex-col shrink-0 order-2">
@@ -681,7 +681,7 @@ export default function SchedulePage() {
                 <div className="max-w-[1200px] mx-auto">
 
                     <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-slate-800">
+                        <h1 className="text-2xl font-bold text-black">
                             {selectedRoom ? `ตารางสอน — ${selectedRoom.name} ${selectedRoom.building ? `(${selectedRoom.building})` : ''}` : 'ตารางสอน'}
                         </h1>
                         <p className="text-sm text-slate-500 mt-1">

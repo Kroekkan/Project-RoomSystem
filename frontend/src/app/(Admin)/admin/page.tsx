@@ -11,7 +11,7 @@ export default function ProfilePage() {
     const isAdmin = user?.role === 'ADMIN';
 
     return (
-        <div className="p-4 md:p-8 bg-slate-50 min-h-screen">
+        <div className="p-4 md:p-8 bg-app-bg min-h-screen">
             <div className="max-w-7xl mx-auto space-y-3">
                 
                 {/* Banner ยินดีต้อนรับ (แสดงปรับตามสิทธิ์ ADMIN / USER) */}

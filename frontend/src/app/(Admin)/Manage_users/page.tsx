@@ -163,7 +163,7 @@ export default function Manage_users() {
     });
 
     return (
-        <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
+        <div className="min-h-screen bg-app-bg p-6 md:p-10">
             <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                 
                 <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">

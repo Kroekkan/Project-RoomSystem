@@ -292,7 +292,7 @@ export default function AnnouncementBoard() {
   };
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="mt-8 bg-app-bg space-y-6">
       
       {/* 🧭 ส่วนหัวข้อการ์ดสีขาว */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6">

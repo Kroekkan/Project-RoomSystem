@@ -6,9 +6,7 @@ interface User {
     email: string;
     branch: string;
     role?: string;
-    background: string;
-    navbar: string;
-    header: string;
+    themeSettings: Record<string, string> | null;
 }
 
 export function useAuth () {

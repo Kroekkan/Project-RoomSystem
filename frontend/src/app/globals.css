@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@theme {
+  --color-app-bg: var(--app-background);
+  --color-app-bg-text: var(--app-background-text);
+  --color-app-bg-hover: var(--app-background-hover);
+  --color-app-navbar: var(--app-navbar);
+  --color-app-navbar-text: var(--app-navbar-text);
+  --color-app-navbar-hover: var(--app-navbar-hover);
+  --color-app-header: var(--app-header);
+  --color-app-header-text: var(--app-header-text);
+  --color-app-header-hover: var(--app-header-hover);
+}

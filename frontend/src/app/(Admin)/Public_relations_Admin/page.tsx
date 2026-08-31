@@ -299,7 +299,7 @@ export default function AdminPublicRelationsManagementPage() {
   }, {} as Record<CategoryKey, number>);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-app-bg p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Header */}
