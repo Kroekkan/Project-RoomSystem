@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/hooks/Authcontext";
 import { Person } from "../component/Person";
 import Booking_History from "../component/Booking_History";
 import { ShieldCheck, UserCheck } from "lucide-react";

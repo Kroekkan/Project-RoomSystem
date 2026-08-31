@@ -1,7 +1,7 @@
 "use client";
 
 import { useSidebar } from "../context/SidebarContext";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/hooks/Authcontext";
 import { useLogout } from "@/app/hooks/useLogout";
 import Link from "next/link";
 import {

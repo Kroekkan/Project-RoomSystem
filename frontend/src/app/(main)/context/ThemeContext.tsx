@@ -1,6 +1,6 @@
 'use client';
-import { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { useAuth } from '@/app/hooks/useAuth';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from '@/app/hooks/Authcontext';
 
 export type ThemeColors = {
   background: string; backgroundText: string; backgroundHover: string;
@@ -43,26 +43,27 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
   const [colors, setColorsState] = useState<ThemeColors>(defaultTheme);
-  const appliedForUser = useRef<number | null | 'guest'>(null);
 
+  // เดิมใช้ useRef เช็คว่า "เคย apply theme ให้ user.id นี้ไปแล้วหรือยัง" แล้ว
+  // return ทิ้งถ้าตรงกัน ปัญหาคือถ้า useAuth ส่ง user มา 2 จังหวะ (จังหวะแรก
+  // themeSettings ยังไม่มา/ไม่ครบ, จังหวะสองข้อมูลเต็มมาแล้ว) โดย user.id
+  // เท่าเดิมทั้งสองรอบ effect รอบสองจะถูก guard บล็อกไว้ ธีมที่ apply ไปแล้ว
+  // เลยเป็นค่าที่ยังไม่ถูกต้อง ต้องรีเฟรชหน้าใหม่ถึงจะได้ค่าที่ถูก
+  //
+  // แก้โดยเอา ref guard ออก แล้วให้ dependency array ครอบคลุมการเปลี่ยนแปลง
+  // ของ themeSettings จริง ๆ ด้วย (ไม่ใช่แค่ user.id) effect เลย re-run
+  // ทุกครั้งที่ธีมของ user เปลี่ยน ไม่ว่าจะเป็นเพราะสลับ user หรือข้อมูล
+  // user อัปเดตรอบสอง
   useEffect(() => {
     if (authLoading) return;
 
     if (user) {
-      // login แล้ว: ใช้ theme จาก user object ตรงๆ ไม่ fetch เพิ่ม
-      if (appliedForUser.current === user.id) return;
-      appliedForUser.current = user.id;
-
       const theme = user.themeSettings
         ? { ...defaultTheme, ...user.themeSettings }
         : defaultTheme;
       setColorsState(theme);
       applyTheme(theme);
     } else {
-      // guest: fallback localStorage
-      if (appliedForUser.current === 'guest') return;
-      appliedForUser.current = 'guest';
-
       const saved = localStorage.getItem('roomify-theme');
       if (saved) {
         try {
@@ -74,7 +75,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
       applyTheme(defaultTheme);
     }
-  }, [user, authLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, JSON.stringify(user?.themeSettings), authLoading]);
 
   const setColors = (c: ThemeColors) => {
     setColorsState(c);

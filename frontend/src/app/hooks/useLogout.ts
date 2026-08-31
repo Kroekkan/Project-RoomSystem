@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useAuth } from "./useAuth";
+import { useAuth } from "./Authcontext";
 import Swal from "sweetalert2";
 
 export function useLogout () {

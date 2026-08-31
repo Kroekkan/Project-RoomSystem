@@ -1,7 +1,7 @@
 'use client'
 
 import { LogOut, LogIn } from "lucide-react";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/hooks/Authcontext";
 import { useLogout } from "@/app/hooks/useLogout";
 import Link from "next/link";
 

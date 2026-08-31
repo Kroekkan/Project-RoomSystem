@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
 import { LogIn, CalendarDays, BellRing, ShieldCheck, Sparkles, ArrowRight, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/app/hooks/Authcontext";
 
 export default function Login () {
     const [ email, setEmail ] = useState("");
@@ -11,6 +12,7 @@ export default function Login () {
     const [ error, setError ] = useState('');
     const [ loading, setLoading ] = useState(false);
     const router = useRouter();
+    const { refetchAuth } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,6 +33,12 @@ export default function Login () {
             }
 
             const role = data.role;
+
+            // สำคัญ: ต้องดึง user ใหม่ (พร้อม themeSettings ของบัญชีนี้) เข้ามาใน
+            // AuthContext กลาง "ก่อน" ที่จะ redirect เพราะ ThemeProvider ผูกอยู่กับ
+            // context ตัวนี้ ถ้าไม่ refetch ตรงนี้ ThemeProvider จะไม่มีวันรู้ว่ามี
+            // user ใหม่ login เข้ามา (root layout ไม่ remount ตอน client-side nav)
+            await refetchAuth();
 
             if (role === 'USER') {
                 router.replace('/');
