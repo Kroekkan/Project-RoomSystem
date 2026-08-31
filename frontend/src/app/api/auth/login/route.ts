@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   // เรียก NestJS API
-  const res = await fetch('http://localhost:4000/users/login', {
+  const res = await fetch('https://project-roomsystem-backend.onrender.com/users/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -21,8 +21,8 @@ export async function POST(request: Request) {
   const response = NextResponse.json(data);
   response.cookies.set('access_token', data.token, {
     httpOnly: true,
-    secure: false, // production ให้เปลี่ยนเป็น true
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
     maxAge: 60 * 60 * 24, // 1 วัน
   });
