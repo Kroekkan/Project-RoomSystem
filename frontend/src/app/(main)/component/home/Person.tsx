@@ -34,7 +34,7 @@ interface Booking {
   createdAt: string;
 }
 
-const API = process.env.NEXT_CONFIG_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 export function Person() {
   const { user } = useAuth();

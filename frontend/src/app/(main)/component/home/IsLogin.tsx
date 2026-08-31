@@ -8,7 +8,7 @@ import { ShieldCheck, UserCheck, Building2, CheckCircle2 } from "lucide-react";
 import AnnouncementBoard from "./AnnouncementBoard";
 import Swal from "sweetalert2";
 
-const API = process.env.NEXT_CONFIG_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 // 🟢 รายการสาขาวิชา / หมวดวิชาที่ให้เลือก (สามารถปรับเปลี่ยนหรือเพิ่มได้ตามต้องการ)
 const BRANCH_OPTIONS = [

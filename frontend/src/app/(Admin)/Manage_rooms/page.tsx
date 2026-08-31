@@ -27,7 +27,7 @@ interface Room {
   name: string;
 }
 
-const API = process.env.NEXT_CONFIG_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 function formatTimeTH(dateTime?: string | null) {
   if (!dateTime) return '-';

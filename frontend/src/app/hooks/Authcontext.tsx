@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const checkAuth = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/users/me`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
                 method: "GET",
                 credentials: "include",
             });

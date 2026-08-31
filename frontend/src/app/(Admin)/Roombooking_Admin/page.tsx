@@ -89,7 +89,7 @@ export default function SchedulePage() {
 
     const fetchRooms = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`);
             if (res.ok) {
                 const data = await res.json();
                 setRooms(Array.isArray(data) ? data : []);
@@ -105,7 +105,7 @@ export default function SchedulePage() {
     const fetchSchedules = async (roomId: number) => {
         setIsScheduleLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${roomId}/schedules`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${roomId}/schedules`);
             if (res.ok) {
                 const data = await res.json();
                 setSchedule(apiToScheduleData(data));
@@ -169,7 +169,7 @@ export default function SchedulePage() {
 
         if (formValues) {
             try {
-                const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -241,7 +241,7 @@ export default function SchedulePage() {
 
         if (formValues) {
             try {
-                const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${room.id}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -286,7 +286,7 @@ export default function SchedulePage() {
 
         if (result.isConfirmed) {
             try {
-                await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${room.id}`, { method: "DELETE" });
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" });
                 if (selectedRoom?.id === room.id) { setSelectedRoom(null); setSchedule({}); }
                 await fetchRooms();
                 Swal.fire({ title: "ลบห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
@@ -314,7 +314,7 @@ export default function SchedulePage() {
             try {
                 await Promise.all(
                     selectedRoomIds.map((id) =>
-                        fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${id}`, { method: "DELETE" })
+                        fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`, { method: "DELETE" })
                     )
                 );
                 if (selectedRoom && selectedRoomIds.includes(selectedRoom.id)) {
@@ -350,7 +350,7 @@ export default function SchedulePage() {
             try {
                 await Promise.all(
                     rooms.map((room) =>
-                        fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${room.id}`, { method: "DELETE" })
+                        fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" })
                     )
                 );
                 setSelectedRoom(null);
@@ -386,7 +386,7 @@ export default function SchedulePage() {
         if (!selectedRoom) return;
 
         try {
-            const res = await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${selectedRoom.id}/schedules`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${selectedRoom.id}/schedules`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -422,7 +422,7 @@ export default function SchedulePage() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await fetch(`${process.env.NEXT_CONFIG_API_URL}/rooms/${selectedRoom.id}/schedules/${editingScheduleId}`, { method: "DELETE" });
+                    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${selectedRoom.id}/schedules/${editingScheduleId}`, { method: "DELETE" });
                     await fetchSchedules(selectedRoom.id);
                     setIsModalOpen(false);
                     Swal.fire({ title: "ลบสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });

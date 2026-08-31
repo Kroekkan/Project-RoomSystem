@@ -33,7 +33,7 @@ interface Post {
   createdAt: string;
 }
 
-const API = process.env.NEXT_CONFIG_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 const CATEGORY_LABELS: Record<CategoryKey, string> = {
   GENERAL: 'ทั่วไป',

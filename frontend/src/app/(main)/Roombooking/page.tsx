@@ -54,7 +54,7 @@ interface PublicPost {
   resolved: boolean;
 }
 
-const API = process.env.NEXT_CONFIG_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
 
@@ -1619,7 +1619,7 @@ export default function UserBookingPage() {
 
                       <QRCodeSVG
                         value={
-                          process.env.NEXT_LINE_OA_URL ||
+                          process.env.NEXT_PUBLIC_LINE_OA_URL ||
                           "https://line.me/R/ti/p/@yourlineoaid"
                         }
                         size={120}
