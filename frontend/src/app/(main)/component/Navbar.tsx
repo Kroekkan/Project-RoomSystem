@@ -56,8 +56,8 @@ export function Navbar() {
 
   return (
     <aside
-      className={`relative h-full ${isLoading ? "bg-gray-900" : "bg-app-navbar"} text-app-navbar-text flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
-                ${fold ? "w-15" : "w-55"}`}
+      className={`relative h-full ${isLoading ? "bg-[#0B4F6C]" : "bg-app-navbar"} text-app-navbar-text flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
+                ${fold ? "w-15" : "w-55"}`} 
     >
       <div className={`absolute inset-y-0 right-0`}>
         <button
