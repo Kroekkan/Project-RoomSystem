@@ -37,7 +37,7 @@ export function Navbar() {
           <Link
             key={item.name}
             href={item.href}
-            className="flex items-center gap-4 top-3 text-app-navbar-text px-3 py-3 rounded-lg hover:bg-app-navbar-hover hover:text-app-navbar-text transition-colors duration-500 relative group overflow-hidden"
+            className={`flex items-center gap-4 top-3 text-app-navbar-text px-3 py-3 rounded-lg hover:bg-app-navbar-hover hover:text-app-navbar-text transition-colors duration-500 relative group overflow-hidden`}
             scroll
           >
             <Icon size={25} className="shrink-0 my-1" />
@@ -56,7 +56,7 @@ export function Navbar() {
 
   return (
     <aside
-      className={`relative h-full bg-app-navbar text-app-navbar-text flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
+      className={`relative h-full ${isLoading ? "bg-black" : "bg-app-navbar"} text-app-navbar-text flex flex-col shrink-0 transition-[width] duration-1000 ease-in-out
                 ${fold ? "w-15" : "w-55"}`}
     >
       <div className={`absolute inset-y-0 right-0`}>
