@@ -52,8 +52,8 @@ export function IsLogin() {
       // 🟢 ยิง PATCH ไปอัปเดตข้อมูล user
       const res = await fetch(`${API}/users/${user?.id}`, {
         method: "PATCH",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ branch: finalBranch }),
       });
 
