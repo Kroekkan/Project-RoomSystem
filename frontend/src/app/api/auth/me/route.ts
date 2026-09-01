@@ -14,9 +14,10 @@ export async function GET(request: NextRequest) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/users/me`,
+      `/api/users/me`,
       {
         method: "GET",
+        credentials: 'include',
         headers: {
           Cookie: `access_token=${token}`,
         },
