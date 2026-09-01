@@ -194,7 +194,7 @@ export default function UserBookingPage() {
       }
     }
 
-    fetch(`/api/users/me`, { credentials: 'include' })
+    fetch(`/api/auth/me`, { credentials: 'include' })
       .then(res => {
         if (!res.ok) return null;
         return res.json();
