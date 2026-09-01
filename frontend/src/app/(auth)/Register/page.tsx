@@ -412,7 +412,7 @@ export default function Register () {
                         <div className="px-6 md:px-7 pb-5">
 
                             <a
-                                href="http://localhost:4000/users/google"
+                                href="https://project-roomsystem-backend.onrender.com/users/google"
                                 className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-white text-gray-700 font-medium border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
                             >
 
