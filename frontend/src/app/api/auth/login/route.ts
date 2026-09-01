@@ -24,13 +24,16 @@ export async function POST(request: Request) {
       });
     }
 
-    // JWT ที่ Backend สร้างให้
     const token = data.token;
 
     if (!token) {
       return NextResponse.json(
-        { message: "ไม่พบ access token จาก Backend" },
-        { status: 500 }
+        {
+          message: "ไม่พบ access token จาก Backend",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
@@ -44,13 +47,13 @@ export async function POST(request: Request) {
       }
     );
 
-    // ให้ Vercel เป็นคนสร้าง Cookie
+    // ให้ Next.js / Vercel เป็นเจ้าของ Cookie
     response.cookies.set("access_token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24,
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return response;
