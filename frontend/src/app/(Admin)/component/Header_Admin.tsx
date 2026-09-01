@@ -10,7 +10,7 @@ export function Header_Admin () {
     const { handleLogout } = useLogout();
   
   return (
-    <header className="sticky top-0 z-50 bg-app-header test-app-header-text h-16 flex items-center px-4 justify-between shadow-xl">
+    <header className={`sticky top-0 z-50 h-16 flex items-center px-4 justify-between shadow-xl ${isLoading ? "bg-[#1E88E5] text-white" : "bg-app-header text-app-header-text"} `}>
       <h1 className="text-white text-lg font-bold">Roomify</h1>
 
     {isLoading ? (
