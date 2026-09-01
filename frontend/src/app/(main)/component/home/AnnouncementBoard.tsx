@@ -135,6 +135,7 @@ export default function AnnouncementBoard() {
   const [category, setCategory] = useState<CategoryKey>('GENERAL');
   const [location, setLocation] = useState('');
   const [imageFile, setImageFile] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // 🟢 State วันที่เริ่ม - วันสิ้นสุด
   const [startDate, setStartDate] = useState('');
@@ -193,10 +194,22 @@ export default function AnnouncementBoard() {
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!title.trim() || !message.trim()) {
-      Swal.fire({ title: 'กรุณากรอกข้อมูลให้ครบถ้วน', icon: 'warning', timer: 1500, showConfirmButton: false, heightAuto: false });
+      Swal.fire({
+        title: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        icon: 'warning',
+        timer: 1500,
+        showConfirmButton: false,
+        heightAuto: false
+      });
       return;
     }
+
+    // ป้องกันการกดปุ่มซ้ำ
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       const res = await fetch(`${API}/public-posts`, {
@@ -209,13 +222,22 @@ export default function AnnouncementBoard() {
           message: message.trim(),
           location: location.trim() || undefined,
           imageUrl: allowImage && imageFile ? imageFile : undefined,
-          // 🟢 ส่ง startDate และ endDate ไปยัง Backend
-          startDate: category === 'MAINTENANCE' && startDate ? startDate : undefined,
-          endDate: category === 'MAINTENANCE' && endDate ? endDate : undefined,
+
+          startDate:
+            category === 'MAINTENANCE' && startDate
+              ? startDate
+              : undefined,
+
+          endDate:
+            category === 'MAINTENANCE' && endDate
+              ? endDate
+              : undefined,
         }),
       });
 
-      if (!res.ok) throw new Error('โพสต์ประกาศล้มเหลว');
+      if (!res.ok) {
+        throw new Error('โพสต์ประกาศล้มเหลว');
+      }
 
       setIsModalOpen(false);
       setTitle('');
@@ -227,10 +249,27 @@ export default function AnnouncementBoard() {
       setCategory('GENERAL');
 
       fetchMyPosts();
-      Swal.fire({ title: 'เพิ่มประกาศเรียบร้อย!', icon: 'success', timer: 1200, showConfirmButton: false, heightAuto: false });
+
+      Swal.fire({
+        title: 'เพิ่มประกาศเรียบร้อย!',
+        icon: 'success',
+        timer: 1200,
+        showConfirmButton: false,
+        heightAuto: false
+      });
+
     } catch (err) {
       console.error(err);
-      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเพิ่มประกาศได้', heightAuto: false });
+
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่สามารถเพิ่มประกาศได้',
+        heightAuto: false
+      });
+
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -607,9 +646,21 @@ export default function AnnouncementBoard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all"
+                  disabled={isSubmitting}
+                  className={`px-5 py-2 rounded-2xl text-xs font-bold text-white shadow-md transition-all ${
+                    isSubmitting
+                      ? 'bg-indigo-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
+                  }`}
                 >
-                  บันทึกประกาศ
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      กำลังประกาศ...
+                    </span>
+                  ) : (
+                    'บันทึกประกาศ'
+                  )}
                 </button>
               </div>
             </form>
