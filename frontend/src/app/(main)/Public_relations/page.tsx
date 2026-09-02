@@ -353,16 +353,14 @@ export default function Publicrelations() {
                         <span>
                           ปิดตั้งแต่{' '}
                           {post.startDate
-                            ? new Date(post.startDate).toLocaleString('th-TH', {
+                            ? new Date(post.startDate).toLocaleDateString('th-TH', {
                                 dateStyle: 'medium',
-                                timeStyle: 'short',
                               })
                             : '-'}
                           {' ถึง '}
                           {post.endDate
-                            ? new Date(post.endDate).toLocaleString('th-TH', {
+                            ? new Date(post.endDate).toLocaleDateString('th-TH', {
                                 dateStyle: 'medium',
-                                timeStyle: 'short',
                               })
                             : '-'}
                         </span>
