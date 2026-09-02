@@ -26,6 +26,8 @@ interface Post {
   message: string;
   location?: string;
   imageUrl?: string;
+  startDate?: string;
+  endDate?: string;
   authorId: number;
   author: { id: number; name?: string; picture?: string };
   createdAt: string;
@@ -343,6 +345,29 @@ export default function Publicrelations() {
                       </div>
                     )}
 
+                    {post.category === 'MAINTENANCE' && (post.startDate || post.endDate) && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-3">
+                        <Clock className="w-3.5 h-3.5" />
+
+                        <span>
+                          ปิดตั้งแต่{' '}
+                          {post.startDate
+                            ? new Date(post.startDate).toLocaleString('th-TH', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              })
+                            : '-'}
+                          {' ถึง '}
+                          {post.endDate
+                            ? new Date(post.endDate).toLocaleString('th-TH', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              })
+                            : '-'}
+                        </span>
+                      </div>
+                    )}
+                    
                     {post.location && (
                       <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-3">
                         <MapPin className="w-3.5 h-3.5" />
