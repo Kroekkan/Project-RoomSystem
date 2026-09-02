@@ -268,7 +268,21 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
       });
 
       if (!res.ok) {
-        throw new Error('โพสต์ประกาศล้มเหลว');
+        const errorData = await res.json().catch(() => null);
+
+        console.error('Create post error:', {
+          status: res.status,
+          statusText: res.statusText,
+          data: errorData,
+        });
+
+        throw new Error(
+          errorData?.message
+            ? Array.isArray(errorData.message)
+              ? errorData.message.join(', ')
+              : errorData.message
+            : `HTTP ${res.status}`
+        );
       }
 
       setIsModalOpen(false);
@@ -291,15 +305,14 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
       });
 
     } catch (err) {
-      console.error(err);
+      console.error('Create post error:', err);
 
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด',
-        text: 'ไม่สามารถเพิ่มประกาศได้',
-        heightAuto: false
+        text: err instanceof Error ? err.message : 'ไม่สามารถเพิ่มประกาศได้',
+        heightAuto: false,
       });
-
     } finally {
       setIsSubmitting(false);
     }
