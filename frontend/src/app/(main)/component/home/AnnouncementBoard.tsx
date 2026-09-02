@@ -402,14 +402,14 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
     <div className="mt-8 bg-app-bg space-y-6">
       
       {/* 🧭 ส่วนหัวข้อการ์ดสีขาว */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6">
-        <div className="flex items-center gap-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-4 sm:p-6">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 shrink-0">
             <Megaphone className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">ประชาสัมพันธ์</h1>
-            <p className="text-xs text-slate-400 mt-0.5">แจ้งห้องชำรุด ของหาย ของเจอ และประกาศต่างๆ ภายในสถาบัน</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">ประชาสัมพันธ์</h1>
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 leading-relaxed">แจ้งห้องชำรุด ของหาย ของเจอ และประกาศต่างๆ ภายในสถาบัน</p>
           </div>
         </div>
 
@@ -418,7 +418,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
             setCategory('GENERAL');
             setIsModalOpen(true);
           }}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>เพิ่มประกาศ</span>
@@ -426,10 +426,10 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
       </div>
 
       {/* 🧭 แถบปุ่มตัวกรองหมวดหมู่ */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <button
           onClick={() => setActiveFilter('ALL')}
-          className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+          className={`px-3 sm:px-4 py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
             activeFilter === 'ALL' ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
           }`}
         >
@@ -443,7 +443,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
             <button
               key={c.key}
               onClick={() => setActiveFilter(c.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
                 active
                   ? `${STYLE_MAP[c.key].badge} ${STYLE_MAP[c.key].badgeText} ring-1 ring-inset ring-current shadow-xs`
                   : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -458,7 +458,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
       {/* 📋 รายการการ์ดประกาศ */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="bg-white rounded-3xl border border-slate-200 p-5 animate-pulse h-48">
               <div className="h-4 bg-slate-100 rounded w-20 mb-3"></div>
@@ -475,7 +475,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
           <p className="text-xs text-slate-400 mt-1">กดปุ่ม "เพิ่มประกาศ" ด้านบนเพื่อเริ่มสร้างประกาศของคุณ</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredPosts.map((post) => {
             const cat = CATEGORIES.find((c) => c.key === post.category) || CATEGORIES[0];
             const Icon = cat.icon;
@@ -485,7 +485,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
             return (
               <div
                 key={post.id}
-                className={`relative bg-white rounded-3xl border ${style.border} shadow-sm hover:shadow-md p-5 pt-6 transition-all flex flex-col justify-between ${
+                className={`relative bg-white rounded-3xl border ${style.border} shadow-sm hover:shadow-md p-4 sm:p-5 pt-6 transition-all flex flex-col justify-between min-w-0 ${
                   post.resolved ? 'bg-slate-50/70 opacity-80' : ''
                 }`}
               >
@@ -513,14 +513,14 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
                     )}
                   </div>
 
-                  <h3 className="font-bold text-slate-800 text-sm leading-snug mb-1.5">{post.title}</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-3">{post.message}</p>
+                  <h3 className="font-bold text-slate-800 text-sm sm:text-sm leading-snug mb-1.5 break-words">{post.title}</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-3 break-words">{post.message}</p>
 
                   {/* 🟢 แสดงช่วงวันที่ปิดปรับปรุง (สำหรับหมวดปิดปรับปรุง) */}
                   {post.category === 'MAINTENANCE' && (post.startDate || post.endDate) && (
-                    <div className="mb-3 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-2">
+                    <div className="mb-3 px-2.5 sm:px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 flex items-start gap-2">
                       <CalendarDays className="w-4 h-4 text-slate-500 shrink-0" />
-                      <span>
+                      <span className="break-words">
                         ช่วงเวลาปิด: {formatDateTH(post.startDate)} - {formatDateTH(post.endDate) || 'จนกว่าจะแจ้งให้ทราบ'}
                       </span>
                     </div>
@@ -528,7 +528,11 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
                   {post.imageUrl && (
                     <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 max-h-40 bg-slate-50">
-                      <img src={post.imageUrl} alt="" className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300" />
+                      <img
+                        src={post.imageUrl}
+                        alt=""
+                        className="w-full h-32 sm:h-36 object-cover hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
                   )}
 
@@ -552,7 +556,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     {cat.hasResolve && (
                       <button
                         onClick={() => handleToggleResolved(post)}
@@ -579,7 +583,7 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
                     )}
                     <button
                       onClick={() => handleDelete(post.id)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-100 transition-colors cursor-pointer ml-auto"
+                      className="p-2 sm:p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-100 transition-colors cursor-pointer ml-auto shrink-0"
                       title="ลบประกาศ"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -595,9 +599,9 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
 
       {/* Modal เพิ่มประกาศ */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-slate-800 px-6 py-4 text-white flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-slate-800 px-4 sm:px-6 py-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-indigo-400" />
                 <h3 className="font-bold text-base">เพิ่มประกาศใหม่</h3>
@@ -607,7 +611,10 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
               </button>
             </div>
 
-            <form onSubmit={handleCreatePost} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form
+              onSubmit={handleCreatePost}
+              className="p-4 sm:p-6 space-y-4 max-h-[calc(92vh-64px)] sm:max-h-[75vh] overflow-y-auto"
+            >
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">หมวดหมู่ประกาศ <span className="text-rose-500">*</span></label>
                 <select
@@ -757,18 +764,18 @@ const [selectedRoomId, setSelectedRoomId] = useState<string>('');
                 </div>
               )}
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+              <div className="pt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-2xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-5 py-2 rounded-2xl text-xs font-bold text-white shadow-md transition-all ${
+                  className={`w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-2xl text-xs font-bold text-white shadow-md transition-all ${
                     isSubmitting
                       ? 'bg-indigo-400 cursor-not-allowed'
                       : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'

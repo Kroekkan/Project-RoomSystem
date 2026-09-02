@@ -44,7 +44,7 @@ export default function MainLayout({
 
           <main
             id="main-content"
-            className="flex-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto pb-16 md:pb-0"
           >
             <ScrollToTop />
             {children}
