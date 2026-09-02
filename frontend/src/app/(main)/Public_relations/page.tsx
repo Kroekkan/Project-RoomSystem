@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   AlertCircle,
   MapPin,
+  CalendarDays,
 } from "lucide-react";
 
 type CategoryKey = 'GENERAL' | 'DAMAGED' | 'LOST' | 'FOUND' | 'MAINTENANCE';
@@ -346,8 +347,8 @@ export default function Publicrelations() {
                     )}
 
                     {post.category === 'MAINTENANCE' && (post.startDate || post.endDate) && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-3">
-                        <Clock className="w-3.5 h-3.5" />
+                      <div className="mb-3 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-slate-500 shrink-0" />
 
                         <span>
                           ปิดตั้งแต่{' '}
@@ -367,7 +368,7 @@ export default function Publicrelations() {
                         </span>
                       </div>
                     )}
-                    
+
                     {post.location && (
                       <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-3">
                         <MapPin className="w-3.5 h-3.5" />
