@@ -31,10 +31,10 @@ export function Header() {
 
           <button
             onClick={handleLogout}
-            className="bg-app-header-text/90 text-app-header rounded-full p-1.5 sm:p-2 cursor-pointer hover:bg-app-header-text transition-colors shrink-0"
+            className="bg-app-header-text/90 text-black rounded-full p-1.5 sm:p-2 cursor-pointer hover:bg-app-header-text transition-colors shrink-0"
             aria-label="ออกจากระบบ"
           >
-            <LogOut size={18} className="sm:w-5 sm:h-5 text-black" />  
+            <LogOut size={18} className="sm:w-5 sm:h-5" />  
           </button>
         </div>
       ) : (
