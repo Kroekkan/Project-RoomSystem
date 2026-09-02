@@ -137,6 +137,11 @@ export default function AnnouncementBoard() {
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resolvingId, setResolvingId] = useState<number | null>(null);
+  const [rooms, setRooms] = useState<
+    { id: number; name: string }[]
+  >([]);
+
+const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   
   // 🟢 State วันที่เริ่ม - วันสิ้นสุด
   const [startDate, setStartDate] = useState('');
@@ -169,6 +174,19 @@ export default function AnnouncementBoard() {
   useEffect(() => {
     fetchMyPosts();
   }, [currentUser?.id]);
+
+  useEffect(() => {
+    fetch(`${API}/rooms`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRooms(data);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch rooms error:", err);
+      });
+  }, []);
 
   const filteredPosts = useMemo(() => {
     let result = posts;
@@ -221,8 +239,21 @@ export default function AnnouncementBoard() {
           category,
           title: title.trim(),
           message: message.trim(),
-          location: location.trim() || undefined,
-          imageUrl: allowImage && imageFile ? imageFile : undefined,
+
+          location:
+            category === 'MAINTENANCE'
+              ? location.trim() || undefined
+              : location.trim() || undefined,
+
+          roomId:
+            category === 'MAINTENANCE' && selectedRoomId
+              ? Number(selectedRoomId)
+              : undefined,
+
+          imageUrl:
+            allowImage && imageFile
+              ? imageFile
+              : undefined,
 
           startDate:
             category === 'MAINTENANCE' && startDate
@@ -622,16 +653,57 @@ export default function AnnouncementBoard() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">สถานที่ / ห้องที่เกี่ยวข้อง</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="เช่น ห้อง 111, อาคาร 1"
-                  className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
+              {category === 'MAINTENANCE' ? (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    ห้องที่ต้องการปิดปรับปรุง
+                    <span className="text-rose-500"> *</span>
+                  </label>
+
+                  <select
+                    value={selectedRoomId}
+                    onChange={(e) => {
+                      const roomId = e.target.value;
+                      setSelectedRoomId(roomId);
+
+                      const room = rooms.find(
+                        r => Number(r.id) === Number(roomId)
+                      );
+
+                      setLocation(room?.name || '');
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    required
+                  >
+                    <option value="">
+                      -- เลือกห้องที่ต้องการปิด --
+                    </option>
+
+                    {rooms.map(room => (
+                      <option
+                        key={room.id}
+                        value={room.id}
+                      >
+                        {room.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    สถานที่ / ห้องที่เกี่ยวข้อง
+                  </label>
+
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="เช่น ห้อง 111, อาคาร 1"
+                    className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">รายละเอียด <span className="text-rose-500">*</span></label>

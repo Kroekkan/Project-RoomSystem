@@ -48,6 +48,7 @@ interface PublicPost {
   title: string;
   message: string;
   location?: string;
+  roomId?: number | string;
   imageUrl?: string;
   startDate?: string;
   endDate?: string;
@@ -341,15 +342,24 @@ export default function UserBookingPage() {
     post: PublicPost,
     room: Room | null
   ): boolean => {
-    if (!post.location || !room) return false;
+    if (!post || !room) return false;
+
+    // ถ้ามี roomId ให้ใช้ roomId เป็นหลัก
+    if (post.roomId !== undefined && post.roomId !== null) {
+      return Number(post.roomId) === Number(room.id);
+    }
+
+    // ประกาศเก่าที่ไม่มี roomId
+    // ค่อย fallback ไปใช้ location
+    if (!post.location) return false;
 
     const loc = post.location.toLowerCase().trim();
     const roomName = room.name.toLowerCase().trim();
 
     return (
+      loc === roomName ||
       loc.includes(roomName) ||
-      roomName.includes(loc) ||
-      loc.includes(String(room.id))
+      roomName.includes(loc)
     );
   };
 
