@@ -175,25 +175,93 @@ export default function UserBookingPage() {
 
   // 🟢 1. ดึงห้อง, ผู้ใช้, และข้อมูลประกาศประชาสัมพันธ์
   useEffect(() => {
-    fetch(`${API}/rooms`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setRooms(data);
-        }
-      });
-
     let returnedLineUserId = "";
+    let savedBooking: {
+      isModalOpen?: boolean;
+      selectedRoomId?: number | string | null;
+      targetSlot?: {
+        day: string;
+        date: string;
+        period: string;
+      } | null;
+      phone?: string;
+      purpose?: string;
+    } | null = null;
 
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
 
       returnedLineUserId = urlParams.get("lineUserId") || "";
 
+      // ถ้ากลับมาจาก LINE Login ให้ดึงสถานะ Popup เดิมกลับมา
       if (returnedLineUserId) {
         localStorage.setItem("lineUserId", returnedLineUserId);
+
+        const saved = sessionStorage.getItem(
+          "roomBookingLineReturn",
+        );
+
+        if (saved) {
+          try {
+            savedBooking = JSON.parse(saved);
+
+            if (savedBooking?.isModalOpen) {
+              if (savedBooking.targetSlot) {
+                setTargetSlot(savedBooking.targetSlot);
+              }
+
+              if (typeof savedBooking.phone === "string") {
+                setPhone(savedBooking.phone);
+              }
+
+              if (typeof savedBooking.purpose === "string") {
+                setPurpose(savedBooking.purpose);
+              }
+
+              // เปิด Popup กลับมาเหมือนเดิม
+              setIsModalOpen(true);
+            }
+          } catch (error) {
+            console.error(
+              "Restore booking popup error:",
+              error,
+            );
+          }
+
+          sessionStorage.removeItem("roomBookingLineReturn");
+        }
+
+        // ลบ lineUserId ออกจาก URL เพื่อไม่ให้ URL ค้าง
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       }
     }
+
+    fetch(`${API}/rooms`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRooms(data);
+
+          // คืนห้องเดิมที่ผู้ใช้เลือกไว้ก่อน Login LINE
+          if (savedBooking?.selectedRoomId) {
+            const restoredRoom = data.find(
+              (room: Room) =>
+                Number(room.id) === Number(savedBooking?.selectedRoomId),
+            );
+
+            if (restoredRoom) {
+              setSelectedRoom(restoredRoom);
+            }
+          }
+        }
+      })
+      .catch(err => {
+        console.error("Fetch rooms error:", err);
+      });
 
     fetch(`/api/auth/me`, { credentials: 'include' })
       .then(res => {
@@ -203,7 +271,18 @@ export default function UserBookingPage() {
       .then(user => {
         if (user && user.name) {
           setCurrentUser(user);
-          setPhone(user.phone || "");
+
+          // ถ้ากลับจาก LINE Login ให้ใช้เบอร์เดิมที่กรอกไว้ใน Popup
+          // ถ้าไม่มีข้อมูลที่จำไว้ จึงใช้เบอร์จากบัญชี
+          if (
+            returnedLineUserId &&
+            savedBooking &&
+            typeof savedBooking.phone === "string"
+          ) {
+            setPhone(savedBooking.phone);
+          } else {
+            setPhone(user.phone || "");
+          }
 
           const activeLineId =
             returnedLineUserId ||
@@ -535,6 +614,19 @@ export default function UserBookingPage() {
 
   const handleConnectLine = () => {
     if (typeof window !== "undefined") {
+      // จำสถานะ Popup จองห้องไว้ก่อนออกไป Login LINE
+      // เพื่อให้กลับมาแล้วเปิด Popup เดิมต่อได้
+      sessionStorage.setItem(
+        "roomBookingLineReturn",
+        JSON.stringify({
+          isModalOpen: isModalOpen,
+          selectedRoomId: selectedRoom?.id ?? null,
+          targetSlot,
+          phone,
+          purpose,
+        }),
+      );
+
       localStorage.removeItem("lineUserId");
     }
 
