@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Roomify",
   description: "Online Doll Shop",
+  icons: {
+    icon: "/frontend/src/app/Generated_Image_2AOYzMURra3Qdn6c.jpg",
+  },
 };
 
 export default function RootLayout({
