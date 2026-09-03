@@ -115,7 +115,8 @@ export default function AdminPublicRelationsManagementPage() {
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState<CategoryKey>('MAINTENANCE');
   const [location, setLocation] = useState('');
-  const [imageFile, setImageFile] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const currentCategoryConfig = Object.keys(CATEGORY_LABELS).includes(category);
   const allowImage = ['DAMAGED', 'LOST', 'FOUND'].includes(category);
@@ -143,17 +144,47 @@ export default function AdminPublicRelationsManagementPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        Swal.fire({ title: 'ไฟล์มีขนาดใหญ่เกินไป', text: 'กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB', icon: 'warning', heightAuto: false });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageFile(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        title: 'ไฟล์ไม่ถูกต้อง',
+        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น',
+        icon: 'warning',
+        heightAuto: false,
+      });
+      e.target.value = '';
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        title: 'ไฟล์มีขนาดใหญ่เกินไป',
+        text: 'กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB',
+        icon: 'warning',
+        heightAuto: false,
+      });
+      e.target.value = '';
+      return;
+    }
+
+    setImageFile(file);
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearSelectedImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -164,17 +195,24 @@ export default function AdminPublicRelationsManagementPage() {
     }
 
     try {
+      const formData = new FormData();
+
+      formData.append('category', category);
+      formData.append('title', title.trim());
+      formData.append('message', message.trim());
+
+      if (location.trim()) {
+        formData.append('location', location.trim());
+      }
+
+      if (allowImage && imageFile) {
+        formData.append('image', imageFile);
+      }
+
       const res = await fetch(`${API}/public-posts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          category,
-          title: title.trim(),
-          message: message.trim(),
-          location: location.trim() || undefined,
-          imageUrl: allowImage && imageFile ? imageFile : undefined,
-        }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error('โพสต์ประกาศล้มเหลว');
@@ -183,7 +221,7 @@ export default function AdminPublicRelationsManagementPage() {
       setTitle('');
       setMessage('');
       setLocation('');
-      setImageFile(null);
+      clearSelectedImage();
       setCategory('MAINTENANCE');
 
       fetchPosts(false);
@@ -606,12 +644,12 @@ export default function AdminPublicRelationsManagementPage() {
                     onChange={handleImageChange}
                     className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                   />
-                  {imageFile && (
+                  {imagePreview && (
                     <div className="relative mt-2 rounded-xl overflow-hidden border border-slate-200 max-h-32">
-                      <img src={imageFile} alt="Preview" className="w-full h-32 object-cover" />
+                      <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover" />
                       <button
                         type="button"
-                        onClick={() => setImageFile(null)}
+                        onClick={clearSelectedImage}
                         className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-full hover:bg-black"
                       >
                         <X className="w-3.5 h-3.5" />
