@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Roomify",
-  description: "Online Doll Shop",
+  description: "ระบบจองห้องเรียนออนไลน์",
   icons: {
-    icon: "/Logo",
+    icon: "/Logo.png",
   },
 };
 
