@@ -155,18 +155,61 @@ export function Navbar() {
             );
           })}
 
-          {!isLoading && user?.role === "ADMIN" && (
-            <Link
-              href="/admin"
-              scroll
-              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg hover:bg-app-navbar-hover transition-colors duration-300"
-            >
-              <MoveRight size={21} className="shrink-0" />
+          <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-[100] ${isLoading ? "bg-[#0B4F6C] text-white" : "bg-app-navbar text-app-navbar-text"} border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]`}>
+            <div className="flex items-stretch justify-around h-[64px] px-1">
+              {menuTop.map((item) => {
+                const Icon = item.icon;
 
-              <span className="text-[10px] font-medium truncate max-w-full">
-                Admin
-              </span>
-            </Link>
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    scroll
+                    className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg hover:bg-app-navbar-hover transition-colors duration-300"
+                  >
+                    <Icon size={21} className="shrink-0" />
+                    <span className="text-[10px] font-medium truncate max-w-full">
+                      {item.name}
+                    </span>
+                  </Link>
+                );
+              })}
+
+              {!isLoading && (
+                <Link
+                  href="/Setting"
+                  scroll
+                  className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg hover:bg-app-navbar-hover transition-colors duration-300"
+                >
+                  <Settings size={21} className="shrink-0" />
+                  <span className="text-[10px] font-medium truncate max-w-full">
+                    ตั้งค่า
+                  </span>
+                </Link>
+              )}
+
+              {!isLoading && (
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg hover:bg-app-navbar-hover transition-colors duration-300"
+                >
+                  <LogOut size={21} className="shrink-0" />
+                  <span className="text-[10px] font-medium truncate max-w-full">
+                    ออกจากระบบ
+                  </span>
+                </button>
+              )}
+            </div>
+          </nav>
+
+          {isLoading ? (
+            <></>
+          ) : (
+            <div className="flex flex-col mt-auto mb-4">
+              {user?.role === "ADMIN" && renderMenu(adminMenu)}
+              {renderMenu(menuButton)}
+              ...
+            </div>
           )}
 
           {!isLoading && (
