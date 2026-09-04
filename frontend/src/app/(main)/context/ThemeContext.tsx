@@ -134,7 +134,7 @@ export function ThemeProvider({
     if (user) {
       try {
         const res = await fetch(
-          `/api/users/me/theme`,
+          `/api/auth/users/me/theme`,
           {
             method: 'PATCH',
             headers: {
@@ -168,7 +168,7 @@ export function ThemeProvider({
     if (user) {
       try {
         const res = await fetch(
-          `/api/users/me/theme`,
+          `/api/auth/users/me/theme`,
           {
             method: 'PATCH',
             headers: {
