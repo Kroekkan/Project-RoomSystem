@@ -1234,7 +1234,7 @@ export default function UserBookingPage() {
             </p>
           </div>
 
-          <div className="w-full xl:w-auto flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
+          <div className="w-full xl:w-auto flex flex-col sm:flex-row sm:flex-wrap xl:flex-nowrap items-stretch sm:items-center gap-2.5 sm:gap-3">
 
             {/* อาคาร */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1838,258 +1838,245 @@ export default function UserBookingPage() {
         {/* =========================================================
             BOOKING MODAL
         ========================================================= */}
-        {isModalOpen &&
-          targetSlot && (
+        {/* 📝 Modal จองห้อง */}
+        {isModalOpen && targetSlot && (
 
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
 
-              <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md max-h-[94dvh] sm:max-h-[88vh] overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+            <div className="bg-whitew-fullmax-w-mdoverflow-hiddenborder border-slate-200shadow-2xlanimate-infade-inzoom-in-95duration-200rounded-t-3xlsm:rounded-3xlmax-h-[90dvh]sm:max-h-[85vh]flexflex-colpb-[env(safe-area-inset-bottom)]">
 
-                {/* Modal Header */}
-                <div className="bg-emerald-600 px-4 sm:px-6 py-4 text-white shrink-0">
+              {/* Header */}
+              <div className="bg-emerald-600 px-4 sm:px-6 py-4 text-white shrink-0">
 
-                  <h3 className="font-bold text-sm sm:text-base">
-                    📝 ส่งคำขอจองห้อง
-                  </h3>
+                <h3 className="font-bold text-base">
+                  📝 ส่งคำขอจองห้อง
+                </h3>
 
-                  <p className="text-[10px] sm:text-xs text-emerald-100 mt-1 leading-relaxed break-words">
-                    ห้อง: {selectedRoom?.name}
-                    {" "}
-                    {selectedRoom?.building
-                      ? `(${selectedRoom.building})`
-                      : ''
-                    }
-                    {" | วัน"}
-                    {targetSlot.day}
-                    {" ("}
-                    {targetSlot.date}
-                    {") | "}
-                    {getPeriodTitle(
-                      targetSlot.period
-                    )}
-                  </p>
+                <p className="text-xs text-emerald-100 mt-1 leading-relaxed break-words">
+                  ห้อง: {selectedRoom?.name}
 
-                </div>
+                  {selectedRoom?.building
+                    ? ` (${selectedRoom.building})`
+                    : ''
+                  }
 
-                {/* Modal Content */}
-                <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+                  {" | วัน"}
+                  {targetSlot.day}
 
-                  {/* User */}
-                  <div>
+                  {" ("}
+                  {targetSlot.date}
+                  {") | "}
 
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      ผู้ขอจอง (บัญชีปัจจุบัน)
-                    </label>
+                  {getPeriodTitle(targetSlot.period)}
+                </p>
 
-                    <div className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 font-semibold text-xs flex items-center justify-between">
+              </div>
 
-                      <div className="flex items-center gap-2.5 min-w-0">
 
-                        <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                          {currentUser?.name
-                            ? currentUser.name.charAt(0)
-                            : 'U'}
-                        </div>
+              {/* Content */}
+              <div className="flex-1min-h-0overflow-y-autooverscroll-containpx-4sm:px-6py-4sm:py-6space-y-4pb-6">
 
-                        <span className="truncate">
-                          {currentUser?.name ||
-                            'กำลังดึงข้อมูล...'}
-                        </span>
+                {/* ผู้ขอจอง */}
+                <div>
 
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    ผู้ขอจอง (บัญชีปัจจุบัน)
+                  </label>
+
+                  <div className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 font-semibold text-xs flex items-center justify-between">
+
+                    <div className="flex items-center gap-2.5 min-w-0">
+
+                      <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {currentUser?.name
+                          ? currentUser.name.charAt(0)
+                          : 'U'
+                        }
                       </div>
+
+                      <span className="truncate">
+                        {currentUser?.name ||
+                          'กำลังดึงข้อมูล...'
+                        }
+                      </span>
 
                     </div>
 
                   </div>
 
-                  {/* Notification */}
-                  <div className="p-3 sm:p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-3">
+                </div>
 
-                    <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <span>🔔</span>
-                      ข้อมูลสำหรับรับการแจ้งเตือน
-                    </div>
 
-                    {/* Phone */}
-                    <div>
+                {/* Notification */}
+                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-3">
 
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                        📱 เบอร์โทรศัพท์
-                      </label>
+                  <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>🔔</span>
+                    ข้อมูลสำหรับรับการแจ้งเตือน
+                  </div>
 
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={e =>
-                          setPhone(
-                            e.target.value
-                          )
+
+                  {/* Phone */}
+                  <div>
+
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      📱 เบอร์โทรศัพท์
+                    </label>
+
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(e.target.value)
+                      }
+                      placeholder="0812345678"
+                      className="w-fullpx-3.5py-2.5rounded-xlborderborder-slate-200bg-whitetext-xsoutline-nonefocus:ring-2focus:ring-emerald-200"/>
+
+                  </div>
+
+
+                  {/* LINE */}
+                  <div>
+
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      💬 การแจ้งเตือนผ่าน LINE
+                    </label>
+
+                    {lineId ? (
+
+                      <div className="flex items-center justify-between gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+
+                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 min-w-0">
+
+                          <span className="flex h-2 w-2 relative shrink-0">
+
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+
+                          </span>
+
+                          <span className="truncate">
+                            เชื่อมต่อ LINE เรียบร้อยแล้ว
+                          </span>
+
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleConnectLine}
+                          className="text-[11px] font-medium text-emerald-700 hover:underline cursor-pointer shrink-0"
+                        >
+                          เปลี่ยนบัญชี
+                        </button>
+
+                      </div>
+
+                    ) : (
+
+                      <button
+                        type="button"
+                        onClick={handleConnectLine}
+                        className="w-fullpy-2.5px-3rounded-xlbg-[#06C755]hover:bg-[#05b34c]text-whitefont-boldtext-xsflexitems-centerjustify-centergap-2transition-allshadow-xscursor-pointeractive:scale-[0.99]">
+
+                        <svg
+                          className="w-4 h-4 fill-current shrink-0"
+                          viewBox="0 0 24 24"
+                        >
+
+                          <path d="M12 2C6.48 2 2 5.82 2 10.53c0 4.23 3.6 7.77 8.47 8.42.33.07.78.22.89.5.1.26.07.67.03.94l-.14.86c-.04.26-.2.99.87.54 1.07-.45 5.79-3.41 7.9-5.84C21.46 13.9 22 12.3 22 10.53 22 5.82 17.52 2 12 2z"/>
+
+                        </svg>
+
+                        <span>
+                          เชื่อมต่อ LINE เพื่อรับแจ้งเตือน
+                        </span>
+
+                      </button>
+
+                    )}
+
+
+                    {/* QR Code */}
+                    <div className="mt-3 p-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-2">
+
+                      <span className="text-[11px] font-semibold text-slate-600 text-center leading-relaxed">
+                        📷 สแกนเพื่อเพิ่มเพื่อน LINE OA
+                        <br />
+                        รับแจ้งเตือนสถานะการจอง
+                      </span>
+
+                      <QRCodeSVG
+                        value={
+                          process.env.NEXT_PUBLIC_LINE_OA_URL ||
+                          "https://line.me/R/ti/p/@yourlineoaid"
                         }
-                        placeholder="0812345678"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                        size={110}
+                        bgColor="#ffffff"
+                        fgColor="#0f172a"
+                        level="M"
                       />
 
                     </div>
 
-                    {/* LINE */}
-                    <div>
-
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                        💬 การแจ้งเตือนผ่าน LINE
-                      </label>
-
-                      {lineId ? (
-
-                        <div className="flex flex-col xs:flex-row sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-
-                          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
-
-                            <span className="flex h-2 w-2 relative shrink-0">
-
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-
-                            </span>
-
-                            <span>
-                              เชื่อมต่อ LINE เรียบร้อยแล้ว
-                            </span>
-
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={
-                              handleConnectLine
-                            }
-                            className="text-[11px] font-medium text-emerald-700 hover:underline cursor-pointer"
-                          >
-                            เปลี่ยนบัญชี
-                          </button>
-
-                        </div>
-
-                      ) : (
-
-                        <button
-                          type="button"
-                          onClick={
-                            handleConnectLine
-                          }
-                          className="w-full py-2.5 px-3 rounded-xl bg-[#06C755] hover:bg-[#05b34c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer active:scale-[0.99]"
-                        >
-
-                          <svg
-                            className="w-4 h-4 fill-current shrink-0"
-                            viewBox="0 0 24 24"
-                          >
-
-                            <path d="M12 2C6.48 2 2 5.82 2 10.53c0 4.23 3.6 7.77 8.47 8.42.33.07.78.22.89.5.1.26.07.67.03.94l-.14.86c-.04.26-.2.99.87.54 1.07-.45 5.79-3.41 7.9-5.84C21.46 13.9 22 12.3 22 10.53 22 5.82 17.52 2 12 2z"/>
-
-                          </svg>
-
-                          เชื่อมต่อ LINE เพื่อรับแจ้งเตือน
-
-                        </button>
-                      )}
-
-                      {/* QR */}
-                      <div className="mt-3 p-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-2">
-
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 text-center leading-relaxed">
-                          📷 สแกนเพื่อเพิ่มเพื่อน LINE OA
-                          <br className="sm:hidden" />
-                          {" "}
-                          (รับแจ้งเตือนสถานะการจอง)
-                        </span>
-
-                        <div className="p-1">
-
-                          <QRCodeSVG
-                            value={
-                              process.env
-                                .NEXT_PUBLIC_LINE_OA_URL ||
-                              "https://line.me/R/ti/p/@yourlineoaid"
-                            }
-                            size={
-                              typeof window !== "undefined" &&
-                              window.innerWidth < 400
-                                ? 105
-                                : 120
-                            }
-                            bgColor="#ffffff"
-                            fgColor="#0f172a"
-                            level="M"
-                          />
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* Purpose */}
-                  <div>
-
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-
-                      วัตถุประสงค์ในการใช้ห้อง
-
-                      <span className="text-rose-500">
-                        *
-                      </span>
-
-                    </label>
-
-                    <textarea
-                      value={purpose}
-                      onChange={e =>
-                        setPurpose(
-                          e.target.value
-                        )
-                      }
-                      placeholder="เช่น สอนชดเชย, ประชุมกลุ่ม"
-                      rows={3}
-                      className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                      required
-                    />
-
                   </div>
 
                 </div>
 
-                {/* Modal Footer */}
-                <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 border-t border-slate-100 grid grid-cols-2 gap-2 shrink-0">
 
-                  <button
-                    onClick={() =>
-                      setIsModalOpen(
-                        false
-                      )
-                    }
-                    className="w-full px-4 py-2.5 rounded-xl sm:rounded-2xl text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 active:bg-slate-100"
-                  >
-                    ยกเลิก
-                  </button>
+                {/* Purpose */}
+                <div>
 
-                  <button
-                    onClick={
-                      handleSubmitBooking
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+
+                    วัตถุประสงค์ในการใช้ห้อง
+
+                    <span className="text-rose-500">
+                      *
+                    </span>
+
+                  </label>
+
+                  <textarea
+                    value={purpose}
+                    onChange={(e) =>
+                      setPurpose(e.target.value)
                     }
-                    className="w-full px-5 py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md active:bg-emerald-800"
-                  >
-                    ส่งคำขอจอง
-                  </button>
+                    placeholder="เช่น สอนชดเชย, ประชุมกลุ่ม"
+                    rows={3}
+                    className="w-fullpx-3.5py-2.5rounded-2xlborderborder-slate-200text-xsoutline-noneresize-nonefocus:ring-2focus:ring-emerald-200" required/>
 
                 </div>
 
               </div>
 
+
+              {/* Footer / Buttons */}
+              <div
+                className="shrink-0px-4sm:px-6py-3sm:py-4bg-slate-50border-tborder-slate-100flexgap-2pb-[calc(0.75rem+env(safe-area-inset-bottom))]sm:pb-4">
+
+                <button
+                  onClick={() =>
+                    setIsModalOpen(false)
+                  }
+                  className="flex-1px-4py-2.5rounded-2xltext-xsfont-semiboldtext-slate-600bg-whiteborderborder-slate-200hover:bg-slate-100cursor-pointer">
+                  ยกเลิก
+                </button>
+
+
+                <button
+                  onClick={handleSubmitBooking}
+                  className="flex-1px-5py-2.5rounded-2xltext-xsfont-boldtext-whitebg-emerald-600hover:bg-emerald-700shadow-mdcursor-pointer">
+                  ส่งคำขอจอง
+                </button>
+
+              </div>
+
             </div>
-          )}
+
+          </div>
+
+        )}
 
       </div>
     </div>
