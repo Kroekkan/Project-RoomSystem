@@ -13,6 +13,7 @@ import {
   Check,
   RotateCcw,
   Save,
+  Loader2,
 } from 'lucide-react';
 
 /* =========================================================
@@ -176,7 +177,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(25.8% 0.092 26.042)' },
     ],
   },
-
   {
     name: 'orange',
     set: [
@@ -193,7 +193,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(26.6% 0.079 36.259)' },
     ],
   },
-
   {
     name: 'amber',
     set: [
@@ -210,7 +209,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(27.9% 0.077 45.635)' },
     ],
   },
-
   {
     name: 'yellow',
     set: [
@@ -227,7 +225,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(28.6% 0.066 53.813)' },
     ],
   },
-
   {
     name: 'lime',
     set: [
@@ -244,7 +241,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(27.4% 0.072 132.109)' },
     ],
   },
-
   {
     name: 'green',
     set: [
@@ -261,7 +257,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(26.6% 0.065 152.934)' },
     ],
   },
-
   {
     name: 'emerald',
     set: [
@@ -278,7 +273,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(26.2% 0.051 172.552)' },
     ],
   },
-
   {
     name: 'teal',
     set: [
@@ -295,7 +289,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(27.7% 0.046 192.524)' },
     ],
   },
-
   {
     name: 'cyan',
     set: [
@@ -312,7 +305,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(30.2% 0.056 229.695)' },
     ],
   },
-
   {
     name: 'sky',
     set: [
@@ -329,7 +321,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(29.3% 0.066 243.157)' },
     ],
   },
-
   {
     name: 'blue',
     set: [
@@ -346,7 +337,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(28.2% 0.091 267.935)' },
     ],
   },
-
   {
     name: 'indigo',
     set: [
@@ -363,7 +353,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(25.7% 0.09 281.288)' },
     ],
   },
-
   {
     name: 'violet',
     set: [
@@ -380,7 +369,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(28.3% 0.141 291.089)' },
     ],
   },
-
   {
     name: 'purple',
     set: [
@@ -397,7 +385,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(29.1% 0.149 302.717)' },
     ],
   },
-
   {
     name: 'fuchsia',
     set: [
@@ -414,7 +401,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(29.3% 0.136 325.661)' },
     ],
   },
-
   {
     name: 'pink',
     set: [
@@ -431,7 +417,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(28.4% 0.109 3.907)' },
     ],
   },
-
   {
     name: 'rose',
     set: [
@@ -448,7 +433,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(27.1% 0.105 12.094)' },
     ],
   },
-
   {
     name: 'slate',
     set: [
@@ -465,7 +449,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(12.9% 0.042 264.695)' },
     ],
   },
-
   {
     name: 'gray',
     set: [
@@ -482,7 +465,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(13% 0.028 261.692)' },
     ],
   },
-
   {
     name: 'zinc',
     set: [
@@ -499,7 +481,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.1% 0.005 285.823)' },
     ],
   },
-
   {
     name: 'neutral',
     set: [
@@ -516,7 +497,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.5% 0 0)' },
     ],
   },
-
   {
     name: 'stone',
     set: [
@@ -533,7 +513,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.7% 0.004 49.25)' },
     ],
   },
-
   {
     name: 'taupe',
     set: [
@@ -550,7 +529,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.7% 0.004 49.3)' },
     ],
   },
-
   {
     name: 'mauve',
     set: [
@@ -567,7 +545,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.5% 0.008 326)' },
     ],
   },
-
   {
     name: 'mist',
     set: [
@@ -584,7 +561,6 @@ const SetColor: ColorGroup[] = [
       { color: 'oklch(14.8% 0.004 228.8)' },
     ],
   },
-
   {
     name: 'olive',
     set: [
@@ -713,6 +689,7 @@ export default function Setting() {
   );
 
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
   /* =========================================================
@@ -800,15 +777,12 @@ export default function Setting() {
       background: theme.background,
       backgroundText: '#0f172a',
       backgroundHover: '#e2e8f0',
-
       navbar: theme.navbar,
       navbarText: '#ffffff',
       navbarHover: theme.header,
-
       header: theme.header,
       headerText: '#ffffff',
       headerHover: theme.navbar,
-
       name: theme.name,
     };
 
@@ -844,17 +818,33 @@ export default function Setting() {
      Save
   ========================================================= */
 
-  const handleSave = () => {
-    saveTheme({
-      ...colors,
-      name: selectedTheme,
-    });
+  const handleSave = async () => {
+    if (isSaving) return;
 
-    setIsSaved(true);
+    setIsSaving(true);
+    setIsSaved(false);
 
-    window.setTimeout(() => {
-      setIsSaved(false);
-    }, 1800);
+    try {
+      await Promise.resolve(
+        saveTheme({
+          ...colors,
+          name: selectedTheme,
+        }),
+      );
+
+      setIsSaved(true);
+
+      window.setTimeout(() => {
+        setIsSaved(false);
+      }, 1800);
+    } catch (error) {
+      console.error(
+        'Save theme failed:',
+        error,
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /* =========================================================
@@ -911,7 +901,8 @@ export default function Setting() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                  disabled={isSaving}
+                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <RotateCcw size={16} />
                   คืนค่า
@@ -920,9 +911,18 @@ export default function Setting() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"
+                  disabled={isSaving}
+                  className="flex min-w-[110px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {isSaved ? (
+                  {isSaving ? (
+                    <>
+                      <Loader2
+                        size={17}
+                        className="animate-spin"
+                      />
+                      กำลังบันทึก...
+                    </>
+                  ) : isSaved ? (
                     <>
                       <Check size={17} />
                       บันทึกแล้ว
@@ -943,8 +943,11 @@ export default function Setting() {
         {/* =====================================================
             LIVE PREVIEW
         ====================================================== */}
+
         <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm">
+
           <div className="border-b border-slate-200 p-6 md:p-7">
+
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
               Live Preview
             </p>
@@ -956,12 +959,15 @@ export default function Setting() {
             <p className="mt-1 text-sm text-slate-500">
               ตัวอย่างหน้าระบบเมื่อใช้สีที่เลือก
             </p>
+
           </div>
 
           <div className="p-6 md:p-7">
+
             {/* =================================================
                 WEBSITE PREVIEW
             ================================================== */}
+
             <div
               className="relative h-[520px] overflow-hidden rounded-2xl border border-slate-200 shadow-md"
               style={{
@@ -969,9 +975,11 @@ export default function Setting() {
                 color: colors.backgroundText,
               }}
             >
+
               {/* =================================================
                   HEADER
               ================================================== */}
+
               <nav
                 className="absolute left-0 right-0 top-0 z-20 flex h-[64px] items-center justify-between px-5 shadow-sm"
                 style={{
@@ -979,8 +987,11 @@ export default function Setting() {
                   color: colors.headerText,
                 }}
               >
+
                 {/* Logo */}
+
                 <div className="flex items-center gap-3">
+
                   <div
                     className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black"
                     style={{
@@ -992,6 +1003,7 @@ export default function Setting() {
                   </div>
 
                   <div>
+
                     <p className="text-sm font-extrabold leading-none">
                       Roomify
                     </p>
@@ -1004,10 +1016,13 @@ export default function Setting() {
                     >
                       ระบบจองห้องเรียน
                     </p>
+
                   </div>
+
                 </div>
 
                 {/* User */}
+
                 <button
                   type="button"
                   className="flex items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-bold"
@@ -1017,15 +1032,18 @@ export default function Setting() {
                   }}
                 >
                   <span>👤</span>
+
                   <span className="hidden sm:inline">
                     ผู้ใช้งาน
                   </span>
                 </button>
+
               </nav>
 
               {/* =================================================
                   SIDEBAR
               ================================================== */}
+
               <aside
                 className="absolute bottom-0 left-0 top-[64px] z-10 hidden w-[175px] flex-col md:flex"
                 style={{
@@ -1033,9 +1051,13 @@ export default function Setting() {
                   color: colors.navbarText,
                 }}
               >
+
                 {/* Sidebar Menu */}
+
                 <div className="flex flex-1 flex-col px-3 py-5">
+
                   {/* Home */}
+
                   <button
                     type="button"
                     className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold"
@@ -1049,6 +1071,7 @@ export default function Setting() {
                   </button>
 
                   {/* Table */}
+
                   <button
                     type="button"
                     className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold opacity-85"
@@ -1061,6 +1084,7 @@ export default function Setting() {
                   </button>
 
                   {/* Announcement */}
+
                   <button
                     type="button"
                     className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold opacity-85"
@@ -1073,7 +1097,9 @@ export default function Setting() {
                   </button>
 
                   {/* Bottom Menu */}
+
                   <div className="mt-auto space-y-1">
+
                     <button
                       type="button"
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold opacity-85"
@@ -1106,18 +1132,23 @@ export default function Setting() {
                       <span className="text-base">↪</span>
                       <span>ออกจากระบบ</span>
                     </button>
+
                   </div>
+
                 </div>
+
               </aside>
 
               {/* =================================================
                   MAIN CONTENT
               ================================================== */}
+
               <main className="absolute bottom-0 left-0 right-0 top-[64px] overflow-hidden md:left-[175px]">
+
                 <div className="h-full overflow-y-auto p-4 md:p-5">
-                  <div
-                    className="rounded-2xl p-5 shadow-sm bg-white"
-                  >
+
+                  <div className="rounded-2xl bg-white p-5 shadow-sm">
+
                     <p className="text-[11px] font-semibold opacity-80">
                       จัดการห้องเรียน
                     </p>
@@ -1140,14 +1171,19 @@ export default function Setting() {
                     >
                       ดูรายละเอียด
                     </button>
+
                   </div>
 
                   {/* =================================================
                       STAT CARDS
                   ================================================== */}
+
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
+
                     {/* Card 1 */}
+
                     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
                       <p className="text-[10px] text-slate-400">
                         ห้องว่าง
                       </p>
@@ -1155,10 +1191,13 @@ export default function Setting() {
                       <p className="mt-1 text-2xl font-bold text-slate-800">
                         12
                       </p>
+
                     </div>
 
                     {/* Card 2 */}
+
                     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
                       <p className="text-[10px] text-slate-400">
                         รออนุมัติ
                       </p>
@@ -1166,10 +1205,13 @@ export default function Setting() {
                       <p className="mt-1 text-2xl font-bold text-slate-800">
                         3
                       </p>
+
                     </div>
 
                     {/* Card 3 */}
+
                     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
                       <p className="text-[10px] text-slate-400">
                         การจองวันนี้
                       </p>
@@ -1177,15 +1219,21 @@ export default function Setting() {
                       <p className="mt-1 text-2xl font-bold text-slate-800">
                         8
                       </p>
+
                     </div>
+
                   </div>
 
                   {/* =================================================
                       RECENT BOOKING
                   ================================================== */}
+
                   <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
                     <div className="flex items-center justify-between">
+
                       <div>
+
                         <p className="text-xs font-bold text-slate-800">
                           การจองล่าสุด
                         </p>
@@ -1193,6 +1241,7 @@ export default function Setting() {
                         <p className="mt-1 text-[10px] text-slate-400">
                           รายการจองห้องเรียนล่าสุด
                         </p>
+
                       </div>
 
                       <button
@@ -1205,9 +1254,11 @@ export default function Setting() {
                       >
                         ดูทั้งหมด
                       </button>
+
                     </div>
 
                     <div className="mt-3 space-y-2">
+
                       {[
                         {
                           room: 'ห้อง 301',
@@ -1220,11 +1271,14 @@ export default function Setting() {
                           status: 'รออนุมัติ',
                         },
                       ].map((booking) => (
+
                         <div
                           key={booking.room}
                           className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
                         >
+
                           <div>
+
                             <p className="text-[10px] font-semibold text-slate-700">
                               {booking.room}
                             </p>
@@ -1232,6 +1286,7 @@ export default function Setting() {
                             <p className="text-[9px] text-slate-400">
                               {booking.time}
                             </p>
+
                           </div>
 
                           <span
@@ -1243,14 +1298,23 @@ export default function Setting() {
                           >
                             {booking.status}
                           </span>
+
                         </div>
+
                       ))}
+
                     </div>
+
                   </div>
+
                 </div>
+
               </main>
+
             </div>
+
           </div>
+
         </section>
 
         {/* =====================================================
@@ -1275,11 +1339,13 @@ export default function Setting() {
 
             {Theme.map(
               (theme) => {
+
                 const isSelected =
                   selectedTheme ===
                   theme.name;
 
                 return (
+
                   <button
                     key={theme.name}
                     type="button"
@@ -1328,6 +1394,7 @@ export default function Setting() {
                         <div className="mt-1 h-2 w-1/2 rounded bg-slate-200" />
 
                       </div>
+
                     </div>
 
                     {/* THEME NAME */}
@@ -1345,12 +1412,15 @@ export default function Setting() {
                       )}
 
                     </div>
+
                   </button>
+
                 );
               },
             )}
 
           </div>
+
         </section>
 
         {/* =====================================================
@@ -1368,6 +1438,7 @@ export default function Setting() {
             <div className="flex items-start justify-between gap-4">
 
               <div>
+
                 <h2 className="text-sm font-bold text-slate-900">
                   {
                     colorTargets.find(
@@ -1380,6 +1451,7 @@ export default function Setting() {
                 </h2>
 
                 <div className="mt-4 h-px w-[370px] max-w-full bg-slate-300" />
+
               </div>
 
               <button
@@ -1388,11 +1460,13 @@ export default function Setting() {
                 className="cursor-pointer rounded-lg p-2 text-slate-700 transition hover:bg-slate-100"
                 title="คัดลอกสี"
               >
+
                 {copied ? (
                   <Check size={22} />
                 ) : (
                   <Copy size={22} />
                 )}
+
               </button>
 
             </div>
@@ -1428,7 +1502,9 @@ export default function Setting() {
                 </span>
 
               </div>
+
             </div>
+
           </div>
 
           {/* =============================
@@ -1445,11 +1521,13 @@ export default function Setting() {
 
               {colorTargets.map(
                 (target) => {
+
                   const isSelected =
                     selectedTarget ===
                     target.key;
 
                   return (
+
                     <button
                       key={target.key}
                       type="button"
@@ -1466,11 +1544,13 @@ export default function Setting() {
                     >
                       {target.label}
                     </button>
+
                   );
                 },
               )}
 
             </div>
+
           </div>
 
           {/* =============================
@@ -1487,6 +1567,7 @@ export default function Setting() {
 
               {SetColor.map(
                 (group) => {
+
                   const isSelected =
                     selectedColorGroup ===
                     group.name;
@@ -1497,6 +1578,7 @@ export default function Setting() {
                     group.set[0].color;
 
                   return (
+
                     <button
                       key={group.name}
                       type="button"
@@ -1535,11 +1617,13 @@ export default function Setting() {
                       </span>
 
                     </button>
+
                   );
                 },
               )}
 
             </div>
+
           </div>
 
           {/* =============================
@@ -1570,6 +1654,7 @@ export default function Setting() {
                       item,
                       index,
                     ) => {
+
                       const isSelected =
                         colors[
                           selectedTarget
@@ -1577,6 +1662,7 @@ export default function Setting() {
                         item.color;
 
                       return (
+
                         <button
                           key={`${activeColorGroup.name}-${index}`}
                           type="button"
@@ -1602,6 +1688,7 @@ export default function Setting() {
                           />
 
                         </button>
+
                       );
                     },
                   )}
@@ -1614,19 +1701,25 @@ export default function Setting() {
 
                   {ShadeLabels.map(
                     (shade) => (
+
                       <span
                         key={shade}
                         className="w-8 text-center font-mono text-xs text-slate-700"
                       >
                         {shade}
                       </span>
+
                     ),
                   )}
 
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </section>
 
       </div>
