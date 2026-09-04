@@ -1100,7 +1100,8 @@ export default function UserBookingPage() {
           icon: "warning",
           timer: 1200,
           showConfirmButton: false,
-          heightAuto: false
+          heightAuto: false,
+          customClass: { container: "z-[9999]", },
         });
 
         return;
