@@ -130,7 +130,7 @@ export default function AdminPublicRelationsManagementPage() {
   const fetchPosts = async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
-      const res = await fetch(`${API}/public-posts`, { credentials: 'include' });
+      const res = await fetch(`/api/public-posts`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setPosts(Array.isArray(data) ? data : []);
@@ -209,7 +209,7 @@ export default function AdminPublicRelationsManagementPage() {
         formData.append('image', imageFile);
       }
 
-      const res = await fetch(`${API}/public-posts`, {
+      const res = await fetch(`/api/public-posts`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -234,7 +234,7 @@ export default function AdminPublicRelationsManagementPage() {
 
   const handleToggleResolved = async (post: Post) => {
     try {
-      const res = await fetch(`${API}/public-posts/${post.id}`, {
+      const res = await fetch(`/api/public-posts/${post.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -264,7 +264,7 @@ export default function AdminPublicRelationsManagementPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`${API}/public-posts/${id}`, {
+      const res = await fetch(`/api/public-posts/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
