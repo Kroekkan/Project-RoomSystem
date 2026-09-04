@@ -1234,7 +1234,7 @@ export default function UserBookingPage() {
             </p>
           </div>
 
-          <div className="w-full xl:w-auto flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
+          <div className="w-full xl:w-auto flex flex-col sm:flex-row sm:flex-wrap xl:flex-nowrap items-stretch sm:items-center gap-2.5 sm:gap-3">
 
             {/* อาคาร */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1250,7 +1250,7 @@ export default function UserBookingPage() {
                     e.target.value
                   )
                 }
-                className="flex-1 sm:flex-none min-w-0 sm:min-w-[130px] px-3 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="flex-1 sm:flex-none min-w-0 sm:min-w-[100px] px-3 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 <option value="ALL">
                   ทุกอาคาร
@@ -1281,7 +1281,7 @@ export default function UserBookingPage() {
                     e.target.value
                   )
                 }
-                className="flex-1 sm:flex-none min-w-0 sm:min-w-[150px] px-3 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="flex-1 sm:flex-none min-w-0 sm:min-w-[110px] px-3 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 <option value="ALL">
                   ทุกหมวดหมู่
@@ -1331,7 +1331,7 @@ export default function UserBookingPage() {
                     setSelectedRoom(r);
                   }
                 }}
-                className="flex-1 sm:flex-none min-w-0 sm:min-w-[180px] max-w-full px-4 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-bold text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="flex-1 sm:flex-none min-w-0 sm:min-w-[140px] max-w-full px-4 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 bg-white font-bold text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
               >
                 <option value="">
                   -- เลือกห้อง --
