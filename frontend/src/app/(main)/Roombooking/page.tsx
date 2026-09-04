@@ -161,6 +161,7 @@ export default function UserBookingPage() {
   const [adminSchedules, setAdminSchedules] = useState<ScheduleItem[]>([]);
   const [userBookings, setUserBookings] = useState<BookingItem[]>([]);
   const [publicPosts, setPublicPosts] = useState<PublicPost[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1084,28 +1085,29 @@ export default function UserBookingPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmitBooking =
-    async () => {
-      if (
-        !currentUser ||
-        !currentUser.name ||
-        !purpose.trim() ||
-        !selectedRoom ||
-        !targetSlot
-      ) {
-        Swal.fire({
-          title:
-            "กรุณากรอกข้อมูลให้ครบถ้วน",
+  const handleSubmitBooking = async () => {
+      if (isSubmitting) return;
 
+      if (!currentUser || !targetSlot || !selectedRoom) {
+        return;
+      }
+
+      if (!purpose.trim()) {
+        Swal.fire({
+          title: "กรุณากรอกข้อมูลให้ครบถ้วน",
           icon: "warning",
           timer: 1200,
           showConfirmButton: false,
           heightAuto: false,
-          customClass: { container: "z-[9999]", },
+          didOpen: () => {
+            const container = Swal.getContainer();
+            if (container) container.style.zIndex = "99999";
+          },
         });
-
         return;
       }
+
+      setIsSubmitting(true);
 
       try {
         const res =
@@ -1208,6 +1210,8 @@ export default function UserBookingPage() {
           showConfirmButton: false,
           heightAuto: false
         });
+      } finally {
+        setIsSubmitting(false);
       }
     };
 
@@ -2077,12 +2081,19 @@ export default function UserBookingPage() {
                   </button>
 
                   <button
-                    onClick={
-                      handleSubmitBooking
-                    }
-                    className="w-full px-5 py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md active:bg-emerald-800"
+                    type="button"
+                    onClick={handleSubmitBooking}
+                    disabled={isSubmitting}
+                    className="w-full px-5 py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md active:bg-emerald-800 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    ส่งคำขอจอง
+                    {isSubmitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        กำลังส่งคำขอ...
+                      </>
+                    ) : (
+                      "ส่งคำขอจอง"
+                    )}
                   </button>
 
                 </div>
