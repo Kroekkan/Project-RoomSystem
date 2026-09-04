@@ -649,7 +649,7 @@ export default function AnnouncementBoard() {
 
     try {
       const res = await fetch(
-        `${API}/public-posts/${id}`,
+        `/api/public-posts/${id}`,
         {
           method: 'DELETE',
           credentials: 'include',
