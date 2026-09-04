@@ -22,7 +22,7 @@ export function Header_Admin () {
 
                 <button 
                   onClick={handleLogout}
-                  className="bg-white rounded-full px-1 cursor-pointer hover:bg-gray-200"
+                  className="bg-white text-black rounded-full cursor-pointer hover:bg-gray-100 transition-colors shrink-0"
                 >
                 <LogOut size={20} className="shrink-0" />
                 </button>
