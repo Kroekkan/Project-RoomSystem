@@ -234,7 +234,7 @@ export default function AdminPublicRelationsManagementPage() {
 
   const handleToggleResolved = async (post: Post) => {
     try {
-      const res = await fetch(`${API}/public-posts/${post.id}`, {
+      const res = await fetch(`/api/public-posts/${post.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -264,7 +264,7 @@ export default function AdminPublicRelationsManagementPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`${API}/public-posts/${id}`, {
+      const res = await fetch(`/api/public-posts/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
