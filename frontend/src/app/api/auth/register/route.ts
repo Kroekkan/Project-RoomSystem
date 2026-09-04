@@ -6,7 +6,7 @@ export async function POST(request: Request) {
 
     // 1. ส่งข้อมูลไปสมัครสมาชิกที่ Backend
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/users/register`, // หรือ path register ของคุณ
+      `${process.env.NEXT_PUBLIC_API_URL}/users/create`, // หรือ path register ของคุณ
       {
         method: "POST",
         headers: {
