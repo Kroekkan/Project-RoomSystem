@@ -71,7 +71,7 @@ export function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, refetchAuth, setUser } = useAuth();
 
   const [colors, setColorsState] =
     useState<ThemeColors>(defaultTheme);
@@ -124,47 +124,73 @@ export function ThemeProvider({
   };
 
   const saveTheme = async (c: ThemeColors) => {
+    // 1. บันทึกสำรองลง localStorage ทันที (ให้สีแสดงถูกต้องตลอดเวลา)
+    localStorage.setItem(
+      'roomify-theme',
+      JSON.stringify(c),
+    );
+
+    // 2. ถ้าล็อกอินอยู่ ให้ส่งไปบันทึกลง Database ผ่าน Next.js Proxy
     if (user) {
-      await fetch(
-        `/api/users/me/theme/`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
+      try {
+        const res = await fetch(
+          `/api/users/me/theme`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              themeSettings: c,
+            }),
           },
-          credentials: 'include',
-          body: JSON.stringify({
-            themeSettings: c,
-          }),
-        },
-      );
-    } else {
-      localStorage.setItem(
-        'roomify-theme',
-        JSON.stringify(c),
-      );
+        );
+
+        if (res.ok) {
+          // อัปเดต state user ทันที สีจะได้ไม่ดีดกลับ
+          setUser({
+            ...user,
+            themeSettings: c as any,
+          });
+          if (refetchAuth) await refetchAuth();
+        }
+      } catch (err) {
+        console.error("Save theme error:", err);
+      }
     }
   };
 
   const resetTheme = async () => {
     setColors(defaultTheme);
+    localStorage.removeItem('roomify-theme');
 
     if (user) {
-      await fetch(
-        `/api/users/me/theme`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
+      try {
+        const res = await fetch(
+          `/api/users/me/theme`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              themeSettings: null,
+            }),
           },
-          credentials: 'include',
-          body: JSON.stringify({
+        );
+
+        if (res.ok) {
+          setUser({
+            ...user,
             themeSettings: null,
-          }),
-        },
-      );
-    } else {
-      localStorage.removeItem('roomify-theme');
+          });
+          if (refetchAuth) await refetchAuth();
+        }
+      } catch (err) {
+        console.error("Reset theme error:", err);
+      }
     }
   };
 
