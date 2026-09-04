@@ -47,14 +47,15 @@ export default function Register () {
         }
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/create`, {
+            const res = await fetch('/api/auth/register', {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ 
                     email, 
                     password, 
                     name, 
-                    branch: finalBranch // 🟢 ส่ง finalBranch ไปยัง Backend
+                    branch: finalBranch
                 }),
             });
 
@@ -72,7 +73,8 @@ export default function Register () {
                 scrollbarPadding: false,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    router.replace('/');
+                    // 🟢 เปลี่ยนเป็น window.location.href เพื่อให้หน้าเว็บโหลด Cookie ใหม่ทันที
+                    window.location.href = '/';
                 }
             })
 
