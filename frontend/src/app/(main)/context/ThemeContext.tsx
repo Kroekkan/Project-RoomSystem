@@ -126,7 +126,7 @@ export function ThemeProvider({
   const saveTheme = async (c: ThemeColors) => {
     if (user) {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/theme`,
+        `/api/users/me/theme/`,
         {
           method: 'PATCH',
           headers: {
@@ -151,7 +151,7 @@ export function ThemeProvider({
 
     if (user) {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/theme`,
+        `/api/users/me/theme`,
         {
           method: 'PATCH',
           headers: {
