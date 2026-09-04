@@ -210,12 +210,14 @@ export function Person() {
     if (!formValues) return;
 
     try {
+      Swal.showLoading();
+
       const res = await fetch(
         `${API}/users/${currentUser.id}`,
         {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           credentials: 'include',
           body: JSON.stringify(formValues),
@@ -223,9 +225,7 @@ export function Person() {
       );
 
       if (!res.ok) {
-        throw new Error(
-          'อัปเดตข้อมูลล้มเหลว'
-        );
+        throw new Error('อัปเดตข้อมูลล้มเหลว');
       }
 
       await Swal.fire({
