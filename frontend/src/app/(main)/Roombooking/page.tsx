@@ -1842,7 +1842,7 @@ export default function UserBookingPage() {
         {isModalOpen &&
           targetSlot && (
 
-            <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
+            <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:px-4 sm:py-2">
 
               <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md max-h-[94dvh] sm:max-h-[88vh] overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200 flex flex-col">
 
