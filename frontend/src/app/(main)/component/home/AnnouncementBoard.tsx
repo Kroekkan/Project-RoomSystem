@@ -483,7 +483,7 @@ export default function AnnouncementBoard() {
       }
 
       const res = await fetch(
-        `${API}/public-posts`,
+        `/api/public-posts`,
         {
           method: 'POST',
           credentials: 'include',
@@ -572,7 +572,7 @@ export default function AnnouncementBoard() {
 
     try {
       const res = await fetch(
-        `${API}/public-posts/${post.id}`,
+        `/api/public-posts/${post.id}`,
         {
           method: 'PATCH',
           headers: {
