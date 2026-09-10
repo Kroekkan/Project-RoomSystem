@@ -381,7 +381,7 @@ export default function SchedulePage() {
         setIsModalOpen(true);
     };
 
-    const handleSave = async () => {
+   const handleSave = async () => {
         if (!modalSubject.trim()) { 
             Swal.fire({ title: "กรุณากรอกชื่อวิชา", icon: "warning", showConfirmButton: false, heightAuto: false }); 
             return; 
@@ -394,7 +394,7 @@ export default function SchedulePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     day: modalDay,
-                    period: modalPeriod,
+                    period: String(modalPeriod), // 👈 แปลงเป็น string ก่อนส่ง
                     subject: modalSubject.trim(),
                     teacher: modalTeacher.trim() || "-",
                     classroom: modalClassroom.trim() || "-",
@@ -406,7 +406,6 @@ export default function SchedulePage() {
                 setIsModalOpen(false);
                 Swal.fire({ title: isEditing ? "แก้ไขสำเร็จ!" : "เพิ่มสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
             } else {
-                // 👇 เพิ่มส่วนนี้เข้ามา
                 const errorData = await res.json().catch(() => null);
                 console.error("Save schedule failed:", res.status, errorData);
                 Swal.fire({ 
