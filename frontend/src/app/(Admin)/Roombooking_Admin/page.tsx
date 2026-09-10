@@ -23,10 +23,10 @@ type ScheduleData = { [day: string]: DaySchedule };
 
 const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
 const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const time = ["8:30-9:20", "9:20-10:10", "10:10-10:40", "10:40-11:30", "11:30-12:20", 
+const time = ["8:30-9:20", "9:20-10:10", "10:10-10:40", "10:40-11:30", "11:30-12:20",
     "12:20-13:10", "13:10-14:00", "14:00-14:50", "14:50-15:40", "15:40-16:30"
 ]
-const Shortentime = ["8:30-9:10", "9:10-9:50", "9:50-10:20", "10:20-11:00", "11:00-11:40", 
+const Shortentime = ["8:30-9:10", "9:10-9:50", "9:50-10:20", "10:20-11:00", "11:00-11:40",
     "11:40-12:20", "12:20-13:00", "13:00-13:40", "13:40-14:20", "14:20-15:00"
 ]
 
@@ -37,6 +37,16 @@ const dayColors: { [k: string]: string } = {
 };
 
 const defaultColor = "bg-slate-100 text-slate-700 border-slate-200";
+
+// 🔄 Spinner ใช้ร่วมกันในหลายปุ่ม
+function Spinner({ className = "h-4 w-4" }: { className?: string }) {
+    return (
+        <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    );
+}
 
 function apiToScheduleData(apiData: any[]): ScheduleData {
     const result: ScheduleData = {};
@@ -83,6 +93,10 @@ export default function SchedulePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null);
 
+    // ⏳ Loading state สำหรับปุ่มใน Modal เพิ่ม/แก้ไขคาบเรียน
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeletingSchedule, setIsDeletingSchedule] = useState(false);
+
     useEffect(() => {
         fetchRooms();
     }, []);
@@ -121,9 +135,9 @@ export default function SchedulePage() {
         return Array.from(new Set(buildings));
     }, [rooms]);
 
-    // ➕ เพิ่มห้องใหม่
+    // ➕ เพิ่มห้องใหม่ (ปุ่มยืนยันใน Swal จะโชว์ loading spinner เองระหว่างยิง API)
     const handleAddRoom = async () => {
-        const { value: formValues } = await Swal.fire({
+        const { value: success } = await Swal.fire({
             title: "เพิ่มห้องใหม่",
             html: `
               <div class="text-left space-y-3 p-1 ">
@@ -150,7 +164,9 @@ export default function SchedulePage() {
             cancelButtonText: "ยกเลิก",
             confirmButtonColor: "#6366f1",
             heightAuto: false,
-            preConfirm: () => {
+            showLoaderOnConfirm: true, // ⏳ โชว์ loading บนปุ่มยืนยันระหว่างยิง API
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
                 const building = (document.getElementById("swal-room-building") as HTMLInputElement).value;
                 const name = (document.getElementById("swal-room-name") as HTMLInputElement).value;
                 const category = (document.getElementById("swal-room-category") as HTMLSelectElement).value;
@@ -163,39 +179,41 @@ export default function SchedulePage() {
                     Swal.showValidationMessage("กรุณากรอกชื่อห้อง");
                     return false;
                 }
-                return { building: building.trim(), name: name.trim(), category };
+
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            building: building.trim(),
+                            name: name.trim(),
+                            category,
+                        }),
+                    });
+                    if (!res.ok) {
+                        Swal.showValidationMessage("เกิดข้อผิดพลาด ชื่อห้องอาจซ้ำ");
+                        return false;
+                    }
+                    return true;
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
             }
         });
 
-        if (formValues) {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        building: formValues.building,
-                        name: formValues.name,
-                        category: formValues.category
-                    }),
-                });
-                if (res.ok) {
-                    await fetchRooms();
-                    Swal.fire({ title: "เพิ่มห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-                } else {
-                    Swal.fire({ title: "เกิดข้อผิดพลาด", text: "ชื่อห้องอาจซ้ำ", icon: "error", heightAuto: false });
-                }
-            } catch {
-                Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", heightAuto: false });
-            }
+        if (success) {
+            await fetchRooms();
+            Swal.fire({ title: "เพิ่มห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
         }
     };
 
-    // ✏️ แก้ไขห้อง
+    // ✏️ แก้ไขห้อง (ปุ่มยืนยันใน Swal จะโชว์ loading spinner เองระหว่างยิง API)
     const handleEditRoom = async (room: Room) => {
         const isLab = room.category === "ห้องปฏิบัติการ" || room.name.includes("Lab") || room.name.includes("ปฏิบัติการ");
         const currentCategory = room.category || (isLab ? "ห้องปฏิบัติการ" : "ห้องเรียนทั่วไป");
 
-        const { value: formValues } = await Swal.fire({
+        const { value: success } = await Swal.fire({
             title: `แก้ไขห้อง "${room.name}"`,
             html: `
               <div class="text-left space-y-3 p-1">
@@ -222,7 +240,9 @@ export default function SchedulePage() {
             cancelButtonText: "ยกเลิก",
             confirmButtonColor: "#6366f1",
             heightAuto: false,
-            preConfirm: () => {
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
                 const building = (document.getElementById("swal-edit-room-building") as HTMLInputElement).value;
                 const name = (document.getElementById("swal-edit-room-name") as HTMLInputElement).value;
                 const category = (document.getElementById("swal-edit-room-category") as HTMLSelectElement).value;
@@ -235,42 +255,44 @@ export default function SchedulePage() {
                     Swal.showValidationMessage("กรุณากรอกชื่อห้อง");
                     return false;
                 }
-                return { building: building.trim(), name: name.trim(), category };
+
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            building: building.trim(),
+                            name: name.trim(),
+                            category,
+                        }),
+                    });
+                    if (!res.ok) {
+                        Swal.showValidationMessage("เกิดข้อผิดพลาด ชื่อห้องอาจซ้ำ");
+                        return false;
+                    }
+                    return { building: building.trim(), name: name.trim(), category };
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
             }
         });
 
-        if (formValues) {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        building: formValues.building,
-                        name: formValues.name,
-                        category: formValues.category
-                    }),
+        if (success) {
+            await fetchRooms();
+            if (selectedRoom?.id === room.id) {
+                setSelectedRoom({
+                    ...selectedRoom,
+                    building: success.building,
+                    name: success.name,
+                    category: success.category
                 });
-                if (res.ok) {
-                    await fetchRooms();
-                    if (selectedRoom?.id === room.id) {
-                        setSelectedRoom({
-                            ...selectedRoom,
-                            building: formValues.building,
-                            name: formValues.name,
-                            category: formValues.category
-                        });
-                    }
-                    Swal.fire({ title: "แก้ไขห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-                } else {
-                    Swal.fire({ title: "เกิดข้อผิดพลาด", text: "ชื่อห้องอาจซ้ำ", icon: "error", heightAuto: false });
-                }
-            } catch {
-                Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", heightAuto: false });
             }
+            Swal.fire({ title: "แก้ไขห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
         }
     };
 
-    // 🗑️ ลบห้องทีละห้อง
+    // 🗑️ ลบห้องทีละห้อง (ปุ่ม "ลบ" ใน Swal จะโชว์ loading spinner เองระหว่างยิง API)
     const handleDeleteRoom = async (room: Room) => {
         const result = await Swal.fire({
             title: `ลบห้อง "${room.name}"?`,
@@ -282,19 +304,31 @@ export default function SchedulePage() {
             confirmButtonText: "ลบ",
             cancelButtonText: "ยกเลิก",
             heightAuto: false,
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" });
+                    if (!res.ok) {
+                        Swal.showValidationMessage("ลบห้องไม่สำเร็จ");
+                        return false;
+                    }
+                    return true;
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
+            }
         });
 
-        if (result.isConfirmed) {
-            try {
-                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" });
-                if (selectedRoom?.id === room.id) { setSelectedRoom(null); setSchedule({}); }
-                await fetchRooms();
-                Swal.fire({ title: "ลบห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-            } catch { Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", heightAuto: false }); }
+        if (result.isConfirmed && result.value) {
+            if (selectedRoom?.id === room.id) { setSelectedRoom(null); setSchedule({}); }
+            await fetchRooms();
+            Swal.fire({ title: "ลบห้องสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
         }
     };
 
-    // 🗑️ ลบห้องที่เลือก (บางส่วน)
+    // 🗑️ ลบห้องที่เลือก (บางส่วน) — ปุ่ม "ลบ" ใน Swal โชว์ loading เองระหว่างยิง API
     const handleDeleteSelectedRooms = async () => {
         if (selectedRoomIds.length === 0) return;
 
@@ -308,29 +342,35 @@ export default function SchedulePage() {
             confirmButtonText: `ลบ ${selectedRoomIds.length} ห้อง`,
             cancelButtonText: "ยกเลิก",
             heightAuto: false,
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
+                try {
+                    await Promise.all(
+                        selectedRoomIds.map((id) =>
+                            fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`, { method: "DELETE" })
+                        )
+                    );
+                    return true;
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
+            }
         });
 
-        if (result.isConfirmed) {
-            try {
-                await Promise.all(
-                    selectedRoomIds.map((id) =>
-                        fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`, { method: "DELETE" })
-                    )
-                );
-                if (selectedRoom && selectedRoomIds.includes(selectedRoom.id)) {
-                    setSelectedRoom(null);
-                    setSchedule({});
-                }
-                setSelectedRoomIds([]);
-                await fetchRooms();
-                Swal.fire({ title: "ลบห้องที่เลือกสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-            } catch {
-                Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", heightAuto: false });
+        if (result.isConfirmed && result.value) {
+            if (selectedRoom && selectedRoomIds.includes(selectedRoom.id)) {
+                setSelectedRoom(null);
+                setSchedule({});
             }
+            setSelectedRoomIds([]);
+            await fetchRooms();
+            Swal.fire({ title: "ลบห้องที่เลือกสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
         }
     };
 
-    // 🗑️ ลบห้องทั้งหมดในระบบ
+    // 🗑️ ลบห้องทั้งหมดในระบบ — ปุ่มยืนยันใน Swal โชว์ loading เองระหว่างยิง API
     const handleDeleteAllRooms = async () => {
         if (rooms.length === 0) return;
 
@@ -344,23 +384,29 @@ export default function SchedulePage() {
             confirmButtonText: "ยืนยันลบห้องทั้งหมด",
             cancelButtonText: "ยกเลิก",
             heightAuto: false,
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
+                try {
+                    await Promise.all(
+                        rooms.map((room) =>
+                            fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" })
+                        )
+                    );
+                    return true;
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
+            }
         });
 
-        if (result.isConfirmed) {
-            try {
-                await Promise.all(
-                    rooms.map((room) =>
-                        fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${room.id}`, { method: "DELETE" })
-                    )
-                );
-                setSelectedRoom(null);
-                setSchedule({});
-                setSelectedRoomIds([]);
-                await fetchRooms();
-                Swal.fire({ title: "ลบห้องทั้งหมดสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-            } catch {
-                Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", heightAuto: false });
-            }
+        if (result.isConfirmed && result.value) {
+            setSelectedRoom(null);
+            setSchedule({});
+            setSelectedRoomIds([]);
+            await fetchRooms();
+            Swal.fire({ title: "ลบห้องทั้งหมดสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
         }
     };
 
@@ -381,20 +427,22 @@ export default function SchedulePage() {
         setIsModalOpen(true);
     };
 
-   const handleSave = async () => {
-        if (!modalSubject.trim()) { 
-            Swal.fire({ title: "กรุณากรอกชื่อวิชา", icon: "warning", showConfirmButton: false, heightAuto: false }); 
-            return; 
+    // 💾 บันทึกคาบเรียน — ปุ่มในโมดัลใช้ isSaving ควบคุม loading เอง (ไม่ใช่ Swal)
+    const handleSave = async () => {
+        if (!modalSubject.trim()) {
+            Swal.fire({ title: "กรุณากรอกชื่อวิชา", icon: "warning", showConfirmButton: false, heightAuto: false });
+            return;
         }
         if (!selectedRoom) return;
 
+        setIsSaving(true);
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${selectedRoom.id}/schedules`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     day: modalDay,
-                    period: String(modalPeriod), // 👈 แปลงเป็น string ก่อนส่ง
+                    period: String(modalPeriod),
                     subject: modalSubject.trim(),
                     teacher: modalTeacher.trim() || "-",
                     classroom: modalClassroom.trim() || "-",
@@ -408,21 +456,26 @@ export default function SchedulePage() {
             } else {
                 const errorData = await res.json().catch(() => null);
                 console.error("Save schedule failed:", res.status, errorData);
-                Swal.fire({ 
-                    title: "บันทึกไม่สำเร็จ", 
-                    text: errorData?.message || `เกิดข้อผิดพลาด (${res.status})`, 
-                    icon: "error", 
-                    heightAuto: false 
+                Swal.fire({
+                    title: "บันทึกไม่สำเร็จ",
+                    text: errorData?.message || `เกิดข้อผิดพลาด (${res.status})`,
+                    icon: "error",
+                    heightAuto: false
                 });
             }
-        } catch (err) { 
+        } catch (err) {
             console.error(err);
-            Swal.fire({ title: "เกิดข้อผิดพลาดในการเชื่อมต่อ", icon: "error", showConfirmButton: false, heightAuto: false }); 
+            Swal.fire({ title: "เกิดข้อผิดพลาดในการเชื่อมต่อ", icon: "error", showConfirmButton: false, heightAuto: false });
+        } finally {
+            setIsSaving(false);
         }
     };
 
+    // 🗑️ ลบคาบเรียน — ปุ่มยืนยันใน Swal โชว์ loading เอง + ปุ่ม "ลบ" ในโมดัลใช้ isDeletingSchedule กันการกดซ้ำ
     const handleDeleteSchedule = () => {
         if (!editingScheduleId || !selectedRoom) return;
+
+        setIsDeletingSchedule(true);
 
         Swal.fire({
             title: "ลบคาบเรียนนี้?",
@@ -434,15 +487,28 @@ export default function SchedulePage() {
             confirmButtonText: "ลบ",
             cancelButtonText: "ยกเลิก",
             heightAuto: false,
-        }).then(async (result) => {
-            if (result.isConfirmed) {
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
                 try {
-                    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${selectedRoom.id}/schedules/${editingScheduleId}`, { method: "DELETE" });
-                    await fetchSchedules(selectedRoom.id);
-                    setIsModalOpen(false);
-                    Swal.fire({ title: "ลบสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
-                } catch { Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", showConfirmButton: false, heightAuto: false }); }
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${selectedRoom.id}/schedules/${editingScheduleId}`, { method: "DELETE" });
+                    if (!res.ok) {
+                        Swal.showValidationMessage("ลบไม่สำเร็จ");
+                        return false;
+                    }
+                    return true;
+                } catch {
+                    Swal.showValidationMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                    return false;
+                }
             }
+        }).then(async (result) => {
+            if (result.isConfirmed && result.value) {
+                await fetchSchedules(selectedRoom.id);
+                setIsModalOpen(false);
+                Swal.fire({ title: "ลบสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
+            }
+            setIsDeletingSchedule(false);
         });
     };
 
@@ -450,7 +516,7 @@ export default function SchedulePage() {
     const filteredRooms = rooms.filter((r) => {
         const matchesSearch = r.name.toLowerCase().includes(roomSearch.toLowerCase()) ||
                               (r.building && r.building.toLowerCase().includes(roomSearch.toLowerCase()));
-        
+
         const matchesBuilding = selectedBuilding === "ALL" || r.building === selectedBuilding;
 
         const isLab = r.category === "ห้องปฏิบัติการ" || r.name.includes("Lab") || r.name.includes("ปฏิบัติการ");
@@ -799,7 +865,7 @@ export default function SchedulePage() {
             {/* Modal เพิ่ม / แก้ไขคาบเรียน */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-                    onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
+                    onClick={(e) => { if (e.target === e.currentTarget && !isSaving && !isDeletingSchedule) setIsModalOpen(false); }}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
                         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-4">
                             <h2 className="text-white font-bold text-lg">{isEditing ? '✏️ แก้ไขคาบเรียน' : '➕ เพิ่มคาบเรียน'}</h2>
@@ -811,42 +877,47 @@ export default function SchedulePage() {
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">ชื่อวิชา <span className="text-rose-500">*</span></label>
                                 <input type="text" value={modalSubject} onChange={(e) => setModalSubject(e.target.value)}
-                                    placeholder="เช่น คณิตศาสตร์" autoFocus
-                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                                    placeholder="เช่น คณิตศาสตร์" autoFocus disabled={isSaving || isDeletingSchedule}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">ชื่ออาจารย์ผู้สอน</label>
                                 <input type="text" value={modalTeacher} onChange={(e) => setModalTeacher(e.target.value)}
-                                    placeholder="เช่น อ.สมชาย"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                                    placeholder="เช่น อ.สมชาย" disabled={isSaving || isDeletingSchedule}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">ห้องที่สอน</label>
                                 <input type="text" value={modalClassroom} onChange={(e) => setModalClassroom(e.target.value)}
-                                    placeholder="เช่น 301, 411"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                                    placeholder="เช่น 301, 411" disabled={isSaving || isDeletingSchedule}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400" />
                             </div>
                         </div>
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                             <div>
                                 {isEditing && (
-                                    <button onClick={handleDeleteSchedule}
-                                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-colors cursor-pointer">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
+                                    <button onClick={handleDeleteSchedule} disabled={isSaving || isDeletingSchedule}
+                                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                        {isDeletingSchedule ? (
+                                            <Spinner className="h-4 w-4" />
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        )}
+                                        {isDeletingSchedule ? 'กำลังลบ...' : 'ลบ'}
                                     </button>
                                 )}
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+                                <button onClick={() => setIsModalOpen(false)} disabled={isSaving || isDeletingSchedule}
+                                    className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                                     ยกเลิก
                                 </button>
-                                <button onClick={handleSave}
-                                    className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors cursor-pointer shadow-sm">
-                                    {isEditing ? 'บันทึกการแก้ไข' : 'เพิ่มคาบเรียน'}
+                                <button onClick={handleSave} disabled={isSaving || isDeletingSchedule}
+                                    className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors cursor-pointer shadow-sm disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2">
+                                    {isSaving && <Spinner className="h-4 w-4" />}
+                                    {isSaving ? 'กำลังบันทึก...' : (isEditing ? 'บันทึกการแก้ไข' : 'เพิ่มคาบเรียน')}
                                 </button>
                             </div>
                         </div>
