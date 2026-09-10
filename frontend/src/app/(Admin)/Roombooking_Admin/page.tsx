@@ -382,7 +382,10 @@ export default function SchedulePage() {
     };
 
     const handleSave = async () => {
-        if (!modalSubject.trim()) { Swal.fire({ title: "กรุณากรอกชื่อวิชา", icon: "warning", showConfirmButton: false, heightAuto: false }); return; }
+        if (!modalSubject.trim()) { 
+            Swal.fire({ title: "กรุณากรอกชื่อวิชา", icon: "warning", showConfirmButton: false, heightAuto: false }); 
+            return; 
+        }
         if (!selectedRoom) return;
 
         try {
@@ -402,8 +405,21 @@ export default function SchedulePage() {
                 await fetchSchedules(selectedRoom.id);
                 setIsModalOpen(false);
                 Swal.fire({ title: isEditing ? "แก้ไขสำเร็จ!" : "เพิ่มสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false, heightAuto: false });
+            } else {
+                // 👇 เพิ่มส่วนนี้เข้ามา
+                const errorData = await res.json().catch(() => null);
+                console.error("Save schedule failed:", res.status, errorData);
+                Swal.fire({ 
+                    title: "บันทึกไม่สำเร็จ", 
+                    text: errorData?.message || `เกิดข้อผิดพลาด (${res.status})`, 
+                    icon: "error", 
+                    heightAuto: false 
+                });
             }
-        } catch { Swal.fire({ title: "เกิดข้อผิดพลาด", icon: "error", showConfirmButton: false, heightAuto: false }); }
+        } catch (err) { 
+            console.error(err);
+            Swal.fire({ title: "เกิดข้อผิดพลาดในการเชื่อมต่อ", icon: "error", showConfirmButton: false, heightAuto: false }); 
+        }
     };
 
     const handleDeleteSchedule = () => {
