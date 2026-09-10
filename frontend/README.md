@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏫 Roomify — Frontend
 
-## Getting Started
+ระบบจองห้องเรียนออนไลน์ **Roomify** พัฒนาด้วย Next.js, React และ TypeScript โดยเชื่อมต่อกับ Backend API ที่พัฒนาด้วย NestJS
 
-First, run the development server:
+## ✨ ความสามารถ
+- สมัครสมาชิกและเข้าสู่ระบบ
+- Google Login
+- จัดการข้อมูลผู้ใช้งาน
+- ดูและจัดการห้องเรียน
+- ดูตารางการใช้ห้อง
+- จองและยกเลิกห้องเรียน
+- ดูประวัติการจอง
+- ระบบประชาสัมพันธ์
+- รองรับ LINE
+- ปรับแต่งธีมสี
+- สิทธิ์ User / Admin
+
+## 🛠️ เทคโนโลยี
+Next.js • React • TypeScript • Tailwind CSS • Context API • Axios • SweetAlert2 • Lucide React
+
+## 🚀 ติดตั้ง
+
+```bash
+git clone https://github.com/Kroekkan/Project-RoomSystem.git
+cd Project-RoomSystem
+npm install
+```
+
+## ⚙️ Environment Variables
+
+สร้าง `.env.local`
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+เมื่อ Backend Deploy แล้ว ให้เปลี่ยนเป็น URL ของ Backend เช่น
+
+```env
+NEXT_PUBLIC_API_URL=https://your-backend-url.com
+```
+
+> ⚠️ อย่า commit `.env.local` ที่มีข้อมูลจริงขึ้น GitHub
+
+## ▶️ รัน
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+เปิด `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🐳 Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker build -t roomify-frontend .
+docker run -p 3000:3000 roomify-frontend
+```
 
-## Learn More
+## 🔗 การเชื่อมต่อ
 
-To learn more about Next.js, take a look at the following resources:
+```text
+Frontend (Next.js :3000)
+          │
+          ▼ HTTP API
+Backend (NestJS :4000)
+          │
+          ▼
+PostgreSQL
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Backend Repository:
+https://github.com/Kroekkan/Project-RoomSystem-Backend
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🌐 Deploy
 
-## Deploy on Vercel
+สามารถ Deploy Frontend บน Vercel ได้ โดยตั้งค่า:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+NEXT_PUBLIC_API_URL=https://your-backend-url.com
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 👥 สิทธิ์
+**User:** จองห้อง ดูตาราง ดูประวัติ และยกเลิกการจอง
+
+**Admin:** จัดการห้อง ผู้ใช้งาน การจอง และประชาสัมพันธ์
+
+## 👨‍💻 ผู้พัฒนา
+**Kroekkan**
