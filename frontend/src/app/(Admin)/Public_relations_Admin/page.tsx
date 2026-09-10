@@ -35,8 +35,6 @@ interface Post {
   createdAt: string;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
 const CATEGORY_LABELS: Record<CategoryKey, string> = {
   GENERAL: 'ทั่วไป',
   DAMAGED: 'ห้องชำรุด',
@@ -140,7 +138,7 @@ export default function AdminPublicRelationsManagementPage() {
     if (showLoading) setIsLoading(true);
 
     try {
-      const res = await fetch(`${API}/public-posts`, {
+      const res = await fetch(`/api/public-posts`, {
         credentials: 'include',
       });
 
@@ -236,7 +234,7 @@ export default function AdminPublicRelationsManagementPage() {
         formData.append('image', imageFile);
       }
 
-      const res = await fetch(`${API}/public-posts`, {
+      const res = await fetch(`/api/public-posts`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
