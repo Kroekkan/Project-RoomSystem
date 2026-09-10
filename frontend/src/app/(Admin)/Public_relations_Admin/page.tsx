@@ -501,15 +501,7 @@ export default function AdminPublicRelationsManagementPage() {
                 className="pl-9 pr-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-w-[220px]"
               />
             </div>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              disabled={isCreating}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <Plus className="w-4 h-4" />
-              <span>เพิ่มประกาศ</span>
-            </button>
+            
           </div>
         </div>
 
