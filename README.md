@@ -32,12 +32,16 @@ npm install
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_LINE_QA_URL=your-line-qa-url
+
+JWT_SECRET=
 ```
 
 เมื่อ Backend Deploy แล้ว ให้เปลี่ยนเป็น URL ของ Backend เช่น
 
 ```env
 NEXT_PUBLIC_API_URL=https://your-backend-url.com
+NEXT_PUBLIC_LINE_QA_URL=your-line-qa-url
 ```
 
 > ⚠️ อย่า commit `.env.local` ที่มีข้อมูลจริงขึ้น GitHub
