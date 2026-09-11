@@ -889,7 +889,7 @@ export default function SchedulePage() {
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">ห้องที่สอน</label>
                                 <input type="text" value={modalClassroom} onChange={(e) => setModalClassroom(e.target.value)}
-                                    placeholder="เช่น 301, 411" disabled={isSaving || isDeletingSchedule}
+                                    placeholder="เช่น ปวช.2/1 AC" disabled={isSaving || isDeletingSchedule}
                                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm disabled:bg-slate-50 disabled:text-slate-400" />
                             </div>
                         </div>
