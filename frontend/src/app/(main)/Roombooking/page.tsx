@@ -66,17 +66,20 @@ const days = [
   "อาทิตย์"
 ];
 
+// ใช้ค่า period จริงจากฐานข้อมูลเหมือนหน้าแอดมิน
+// 3 = ช่วงพัก 30 นาที และคาบหลังจากนั้นยังใช้เลขจริง 4-10
+// ส่วนหัวตารางจะแสดง 4 เป็น "คาบ 3", 5 เป็น "คาบ 4" ... 10 เป็น "คาบ 9"
 const periods = [
   "1",
   "2",
-  "พัก 30",
   "3",
   "4",
   "5",
   "6",
   "7",
   "8",
-  "9"
+  "9",
+  "10"
 ];
 
 const time = [
@@ -146,7 +149,13 @@ function formatDateTH(d: Date | string): string {
 }
 
 function getPeriodTitle(p: string): string {
-  return `คาบ ${p}`;
+  const periodNumber = Number(p);
+
+  if (periodNumber === 3) {
+    return "พัก 30";
+  }
+
+  return `คาบ ${periodNumber > 3 ? periodNumber - 1 : periodNumber}`;
 }
 
 export default function UserBookingPage() {
@@ -474,13 +483,24 @@ export default function UserBookingPage() {
         const data =
           await res.json();
 
-        setAdminSchedules(
-          data.schedules || []
-        );
+        // แปลง period เป็น string ให้ตรงกับหน้าแอดมินและค่า periods ด้านบน
+        // เพื่อป้องกันกรณี API ส่งกลับมาเป็น number เช่น 3 แทน "3"
+        const schedules = Array.isArray(data.schedules)
+          ? data.schedules.map((item: ScheduleItem) => ({
+              ...item,
+              period: String(item.period),
+            }))
+          : [];
 
-        setUserBookings(
-          data.bookings || []
-        );
+        const bookings = Array.isArray(data.bookings)
+          ? data.bookings.map((item: BookingItem) => ({
+              ...item,
+              period: String(item.period),
+            }))
+          : [];
+
+        setAdminSchedules(schedules);
+        setUserBookings(bookings);
       }
     } catch (err) {
       console.error(err);
@@ -882,6 +902,11 @@ export default function UserBookingPage() {
     dateStr: string,
     period: string
   ) => {
+    // period 3 คือช่วงพัก 30 นาที ไม่ใช่คาบสำหรับจอง
+    if (period === "3") {
+      return;
+    }
+
     const maintenance =
       getMaintenanceForDate(
         dateStr
@@ -1743,10 +1768,7 @@ export default function UserBookingPage() {
                                 let titleText =
                                   "🟢 ว่าง";
 
-                                let subText =
-                                  p === "พัก 30"
-                                    ? "คลิกจอง (พัก 30)"
-                                    : "คลิกจอง";
+                                let subText = "คลิกจอง";
 
                                 if (
                                   adminItem
