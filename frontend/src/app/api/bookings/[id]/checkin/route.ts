@@ -5,17 +5,17 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = (await cookies()).get("access_token")?.value; // ชื่อ cookie ให้ตรงกับที่ backend set
-
+  const { id } = await params;
+  const token = (await cookies()).get("access_token")?.value;
   const body = await req.json();
 
-  const res = await fetch(`${API}/bookings/${params.id}/checkin`, {
+  const res = await fetch(`${API}/bookings/${id}/checkin`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // ส่งเป็น header แทนพึ่ง cookie ข้าม domain
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });

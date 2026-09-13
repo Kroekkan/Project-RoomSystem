@@ -5,13 +5,15 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const token = (await cookies()).get("access_token")?.value;
 
   const body = await req.json();
 
-  const res = await fetch(`${API}/bookings/${params.id}/checkout`, {
+  const res = await fetch(`${API}/bookings/${id}/checkout`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
