@@ -198,6 +198,7 @@ export default function UserBookingPage() {
 
   useEffect(() => {
     let returnedLineUserId = "";
+    let roomParam = "";
 
     let savedBooking: {
       isModalOpen?: boolean;
@@ -214,7 +215,7 @@ export default function UserBookingPage() {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
 
-      const roomParam =
+      roomParam =
         urlParams.get("room") || "";
 
       returnedLineUserId =
