@@ -72,7 +72,6 @@ const days = [
 const periods = [
   "1",
   "2",
-  "พัก 30",
   "3",
   "4",
   "5",
@@ -80,6 +79,7 @@ const periods = [
   "7",
   "8",
   "9",
+  "10"
 ];
 
 const time = [
