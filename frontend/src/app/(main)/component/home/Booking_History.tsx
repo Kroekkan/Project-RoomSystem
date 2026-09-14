@@ -54,6 +54,18 @@ function formatTimeTH(dStr: string): string {
   });
 }
 
+function formatBookingDate(dateStr: string): string {
+  // รองรับวันที่จาก API ในรูปแบบ YYYY-MM-DD หรือ YYYY-MM-DDTHH:mm:ss...
+  const datePart = dateStr.split("T")[0];
+  const [year, month, day] = datePart.split("-");
+
+  if (year && month && day) {
+    return `${day}-${month}-${year}`;
+  }
+
+  return dateStr;
+}
+
 export default function Booking_History() {
   const { user } = useAuth();
 
@@ -178,6 +190,53 @@ export default function Booking_History() {
         `${type} error:`,
         err
       );
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleCancel = async (booking: Booking) => {
+    if (actionLoadingId !== null) return;
+
+    const confirmed = window.confirm(
+      `ต้องการยกเลิกการจองห้อง ${booking.room?.name || booking.roomId} วันที่ ${formatBookingDate(booking.date)} ใช่หรือไม่?`
+    );
+
+    if (!confirmed) return;
+
+    setActionLoadingId(booking.id);
+
+    try {
+      const res = await fetch(
+        `${API}/bookings/${booking.id}/cancel`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("cancel failed");
+      }
+
+      setHistory((prev) =>
+        prev.map((item) =>
+          item.id === booking.id
+            ? {
+                ...item,
+                status: 'CANCELLED',
+                checkInTime: null,
+                checkOutTime: null,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error("Cancel booking error:", err);
+      window.alert("ไม่สามารถยกเลิกการจองได้ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setActionLoadingId(null);
     }
@@ -337,16 +396,24 @@ export default function Booking_History() {
                     <div className="flex items-center gap-2">
                       <Building className="w-4 h-4 text-indigo-400 shrink-0" />
 
-                      <span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.href =
+                            `/Roombooking?room=${encodeURIComponent(String(item.roomId))}`;
+                        }}
+                        className="text-indigo-700 hover:text-indigo-900 hover:underline transition-colors cursor-pointer"
+                        title={`เปิดตารางห้อง ${item.room?.name || item.roomId}`}
+                      >
                         {item.room?.name ||
                           `ห้อง ID: ${item.roomId}`}
-                      </span>
+                      </button>
                     </div>
                   </td>
 
                   <td className="py-3.5 px-3 sm:px-4 text-slate-700">
                     <div className="font-semibold">
-                      วัน{item.day}ที่ {item.date}
+                      วัน{item.day}ที่ {formatBookingDate(item.date)}
                     </div>
 
                     <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
@@ -392,7 +459,20 @@ export default function Booking_History() {
                   </td>
 
                   <td className="py-3.5 px-3 sm:px-4 text-center">
-                    {item.status !== 'APPROVED' ? (
+                    {item.status === 'PENDING' ? (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <button
+                          onClick={() => handleCancel(item)}
+                          disabled={actionLoadingId === item.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          {actionLoadingId === item.id
+                            ? 'กำลังยกเลิก...'
+                            : 'ยกเลิก'}
+                        </button>
+                      </div>
+                    ) : item.status !== 'APPROVED' ? (
                       <span className="text-slate-300">
                         -
                       </span>
@@ -464,6 +544,17 @@ export default function Booking_History() {
                             )}
                           </span>
                         )}
+
+                        <button
+                          onClick={() => handleCancel(item)}
+                          disabled={actionLoadingId === item.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          {actionLoadingId === item.id
+                            ? 'กำลังยกเลิก...'
+                            : 'ยกเลิก'}
+                        </button>
                       </div>
                     )}
                   </td>

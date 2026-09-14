@@ -214,6 +214,9 @@ export default function UserBookingPage() {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
 
+      const roomParam =
+        urlParams.get("room") || "";
+
       returnedLineUserId =
         urlParams.get("lineUserId") || "";
 
@@ -282,17 +285,22 @@ export default function UserBookingPage() {
         if (Array.isArray(data)) {
           setRooms(data);
 
-          if (savedBooking?.selectedRoomId) {
-            const restoredRoom = data.find(
+          // ถ้าเข้ามาจากประวัติการจอง เช่น /Roombooking?room=113
+          // ให้เลือกห้องนั้นอัตโนมัติ
+          const roomIdToSelect =
+            roomParam ||
+            savedBooking?.selectedRoomId ||
+            "";
+
+          if (roomIdToSelect) {
+            const targetRoom = data.find(
               (room: Room) =>
                 Number(room.id) ===
-                Number(savedBooking?.selectedRoomId)
+                Number(roomIdToSelect)
             );
 
-            if (restoredRoom) {
-              setSelectedRoom(
-                restoredRoom
-              );
+            if (targetRoom) {
+              setSelectedRoom(targetRoom);
             }
           }
         }
