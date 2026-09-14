@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/hooks/Authcontext";
+import Swal from "sweetalert2";
 import {
   History,
   Calendar,
@@ -198,11 +199,22 @@ export default function Booking_History() {
   const handleCancel = async (booking: Booking) => {
     if (actionLoadingId !== null) return;
 
-    const confirmed = window.confirm(
-      `ต้องการยกเลิกการจองห้อง ${booking.room?.name || booking.roomId} วันที่ ${formatBookingDate(booking.date)} ใช่หรือไม่?`
-    );
+    const result = await Swal.fire({
+      title: "ยืนยันการยกเลิก?",
+      text: `ต้องการยกเลิกการจองห้อง ${
+        booking.room?.name || booking.roomId
+      } วันที่ ${formatBookingDate(booking.date)} ใช่หรือไม่?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยันยกเลิก",
+      cancelButtonText: "ไม่ยกเลิก",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      reverseButtons: true,
+      heightAuto: false
+    });
 
-    if (!confirmed) return;
+    if (!result.isConfirmed) return;
 
     setActionLoadingId(booking.id);
 
@@ -227,16 +239,33 @@ export default function Booking_History() {
           item.id === booking.id
             ? {
                 ...item,
-                status: 'CANCELLED',
+                status: "CANCELLED",
                 checkInTime: null,
                 checkOutTime: null,
               }
             : item
         )
       );
+
+      await Swal.fire({
+        title: "ยกเลิกการจองสำเร็จ",
+        text: "รายการจองห้องเรียนถูกยกเลิกแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#10b981",
+      });
+
     } catch (err) {
       console.error("Cancel booking error:", err);
-      window.alert("ไม่สามารถยกเลิกการจองได้ กรุณาลองใหม่อีกครั้ง");
+
+      await Swal.fire({
+        title: "ไม่สามารถยกเลิกได้",
+        text: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#ef4444",
+      });
+
     } finally {
       setActionLoadingId(null);
     }
