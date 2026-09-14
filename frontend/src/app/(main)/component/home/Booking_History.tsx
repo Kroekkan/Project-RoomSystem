@@ -422,7 +422,7 @@ export default function Booking_History() {
                   )}
 
                   <td className="py-3.5 px-3 sm:px-4 font-bold text-indigo-700">
-                    <div className="flex items-center gap-2 bg-sky-300 p-1 hover:bg-sky-400">
+                    <div className="flex items-center gap-2 ">
                       <Building className="w-4 h-4 text-indigo-400 shrink-0" />
 
                       <button
