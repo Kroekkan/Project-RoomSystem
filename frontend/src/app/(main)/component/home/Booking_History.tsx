@@ -431,7 +431,7 @@ export default function Booking_History() {
                           window.location.href =
                             `/Roombooking?room=${encodeURIComponent(String(item.roomId))}`;
                         }}
-                        className="text-indigo-700 hover:text-indigo-900 hover:underline transition-colors cursor-pointer"
+                        className="text-indigo-700 hover:text-indigo-900 hover:underline bg-sky-300 p-1 hover:bg-sky-400 transition-colors cursor-pointer"
                         title={`เปิดตารางห้อง ${item.room?.name || item.roomId}`}
                       >
                         {item.room?.name ||
