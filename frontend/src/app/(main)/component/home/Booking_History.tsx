@@ -461,16 +461,18 @@ export default function Booking_History() {
                   <td className="py-3.5 px-3 sm:px-4 text-center">
                     {item.status === 'PENDING' ? (
                       <div className="flex flex-col items-center gap-1.5">
-                        <button
-                          onClick={() => handleCancel(item)}
-                          disabled={actionLoadingId === item.id}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                          {actionLoadingId === item.id
-                            ? 'กำลังยกเลิก...'
-                            : 'ยกเลิก'}
-                        </button>
+                        {!item.checkInTime && (
+                          <button
+                            onClick={() => handleCancel(item)}
+                            disabled={actionLoadingId === item.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            {actionLoadingId === item.id
+                              ? 'กำลังยกเลิก...'
+                              : 'ยกเลิก'}
+                          </button>
+                        )}
                       </div>
                     ) : item.status !== 'APPROVED' ? (
                       <span className="text-slate-300">
