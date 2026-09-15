@@ -121,23 +121,21 @@ export default function Register () {
                             <span>ระบบจองห้องเรียนออนไลน์ Roomify</span>
                         </div>
 
+                        <div className="flex justify-center">
+                            <img src="/LogoUdom.jpg" alt="Logo" className="h-40 w-40 p-2 object-cover rounded-full"  />
+                        </div>
+
                         {/* Heading */}
                         <div className="space-y-5">
-                            <h1 className="text-3xl md:text-4xl xl:text-5xl font-black text-slate-800 tracking-tight leading-tight">
-                                จองห้องเรียนง่ายๆ
-                                <br />
-                                แค่ไม่กี่คลิก
-                                <br />
-                                พร้อมระบบแจ้งเตือนผ่าน{" "}
-                                <span className="text-emerald-600">
-                                    LINE
-                                </span>
+                            <h1 className="flex justify-center text-3xl md:text-4xl xl:text-5xl font-black text-slate-800 tracking-tight leading-tight">
+                                Roomify{" "}At <h1 className="text-blue-600 ml-5">Udom</h1>
                             </h1>
 
-                            <p className="text-slate-500 text-sm md:text-base leading-7 max-w-lg">
-                                ตรวจสอบตารางใช้ห้องประจำ จองห้องเรียนชดเชย
-                                หรือห้องปฏิบัติการได้ทันที
-                                พร้อมรับผลการอนุมัติจากผู้ดูแลระบบผ่านแชท LINE
+                            <p className="flex justify-center text-slate-500 text-sm md:text-base leading-7 max-w-lg">
+                                ตรวจสอบตารางใช้ห้องประจำ จองห้องเรียนชดเชยหรือห้องปฏิบัติการ
+                            </p>
+                            <p className="flex justify-center text-slate-500 text-sm md:text-base leading-7 max-w-lg">
+                                ได้ทันทีพร้อมรับผลการอนุมัติจากผู้ดูแลระบบผ่านแชท LINE
                             </p>
                         </div>
 
