@@ -563,6 +563,17 @@ export default function AnnouncementBoard() {
   const handleToggleResolved = async (
     post: Post
   ) => {
+    // 🟢 เช็คสิทธิ์: ถ้าเป็นหมวด DAMAGED (ห้องชำรุด) และไม่ใช่ ADMIN ไม่อนุญาตให้กด
+    if (post.category === 'DAMAGED' && !isAdmin) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'ไม่มีสิทธิ์ดำเนินการ',
+        text: 'เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถอัปเดตสถานะห้องชำรุดได้',
+        heightAuto: false,
+      });
+      return;
+    }
+
     const statusCfg =
       STATUS_CONFIG[post.category];
 
@@ -939,35 +950,42 @@ export default function AnnouncementBoard() {
                   <div className="flex items-center gap-2 min-w-0">
 
                     {cat.hasResolve && (
-                      <button
-                        onClick={() =>
-                          handleToggleResolved(post)
-                        }
-                        disabled={
-                          resolvingId === post.id
-                        }
-                        className={`flex-1 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors ${
-                          resolvingId === post.id
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : post.resolved
-                              ? 'bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer'
-                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 cursor-pointer'
-                        }`}
-                      >
-                        {resolvingId === post.id ? (
-                          <span className="flex items-center justify-center gap-1.5">
+                      // 🟢 ถ้าเป็นหมวดห้องชำรุด (DAMAGED) และไม่ใช่ ADMIN จะไม่แสดงปุ่มกด แต่แสดงข้อความสถานะแทน
+                      post.category === 'DAMAGED' && !isAdmin ? (
+                        <div className="flex-1 px-3 py-1.5 rounded-xl text-[11px] font-medium text-slate-500 bg-slate-50 border border-slate-200 text-center">
+                          {post.resolved ? 'เจ้าหน้าที่แก้ไขแล้ว' : 'รอเจ้าหน้าที่ดำเนินการแก้ไข'}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleToggleResolved(post)
+                          }
+                          disabled={
+                            resolvingId === post.id
+                          }
+                          className={`flex-1 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors ${
+                            resolvingId === post.id
+                              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                              : post.resolved
+                                ? 'bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer'
+                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 cursor-pointer'
+                          }`}
+                        >
+                          {resolvingId === post.id ? (
+                            <span className="flex items-center justify-center gap-1.5">
 
-                            <span className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                              <span className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
 
-                            กำลังดำเนินการ...
+                              กำลังดำเนินการ...
 
-                          </span>
-                        ) : (
-                          post.resolved
-                            ? statusCfg.btnUnresolveText
-                            : statusCfg.btnResolveText
-                        )}
-                      </button>
+                            </span>
+                          ) : (
+                            post.resolved
+                              ? statusCfg.btnUnresolveText
+                              : statusCfg.btnResolveText
+                          )}
+                        </button>
+                      )
                     )}
 
                     <button
