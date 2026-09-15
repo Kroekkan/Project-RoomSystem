@@ -98,7 +98,9 @@ export default function Login () {
                             <span>ระบบจองห้องเรียนออนไลน์ Roomify</span>
                         </div>
 
-                        <img src="/LogoUdom.jpg" alt="Logo" className="h-40 w-40 p-2 object-cover rounded-full text-center"  />
+                        <div className="flex justify-center">
+                            <img src="/LogoUdom.jpg" alt="Logo" className="h-40 w-40 p-2 object-cover rounded-full"  />
+                        </div>
 
                         {/* Heading */}
                         <div className="space-y-5">
