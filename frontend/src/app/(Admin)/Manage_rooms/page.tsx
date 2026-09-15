@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Swal from 'sweetalert2';
 
 interface Booking {
@@ -28,6 +28,45 @@ interface Room {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+
+// 🔊 ฟังก์ชันเล่นเสียงกระดิ่ง "กริ๊งๆ" ด้วย Web Audio API
+function playNotificationSound() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext })['webkitAudioContext'];
+    if (!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    // เสียงโน้ตที่ 1
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(880, now); // โน้ต A5
+    gain1.gain.setValueAtTime(0.2, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.35);
+
+    // เสียงโน้ตที่ 2 (สูงขึ้น สดใส)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1174.66, now + 0.12); // โน้ต D6
+    gain2.gain.setValueAtTime(0.2, now + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.55);
+  } catch (err) {
+    console.warn('Audio playback error:', err);
+  }
+}
 
 function formatTimeTH(dateTime?: string | null) {
   if (!dateTime) return '-';
@@ -107,10 +146,14 @@ export default function AdminBookingManagementPage() {
   const [selectedRoomFilter, setSelectedRoomFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // 🔔 เก็บจำนวน PENDING ล่าสุดไว้เทียบตอน polling ว่ามีเพิ่มขึ้นหรือไม่
+  const prevPendingCountRef = useRef<number | null>(null);
+
   useEffect(() => {
     fetchRooms();
-    fetchBookings();
+    fetchBookings(true);
 
+    // Polling ตรวจสอบทุกๆ 5 วินาที
     const interval = window.setInterval(() => {
       fetchBookings(false);
     }, 5000);
@@ -142,8 +185,23 @@ export default function AdminBookingManagementPage() {
       }
 
       if (res.ok) {
-        const data = await res.json();
-        setBookings(Array.isArray(data) ? data : []);
+        const data: Booking[] = await res.json();
+        const bookingList = Array.isArray(data) ? data : [];
+        setBookings(bookingList);
+
+        // 🔔 ตรวจจับว่ามีรายการจองสถานะ PENDING เพิ่มเข้ามาใหม่หรือไม่
+        const currentPendingCount = bookingList.filter(
+          (b) => b.status === 'PENDING'
+        ).length;
+
+        if (
+          prevPendingCountRef.current !== null &&
+          currentPendingCount > prevPendingCountRef.current
+        ) {
+          playNotificationSound();
+        }
+
+        prevPendingCountRef.current = currentPendingCount;
       }
     } catch (err) {
       console.error('Fetch bookings error:', err);
@@ -454,14 +512,52 @@ export default function AdminBookingManagementPage() {
   return (
     <div className="min-h-screen bg-app-bg p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        
+        {/* =====================================================
+            HEADER (พร้อมปุ่มกระดิ่งแจ้งเตือน)
+        ===================================================== */}
         <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:flex-row md:items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              จัดการคำขอจองห้อง
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              อนุมัติ ปฏิเสธ และตรวจสอบประวัติการใช้งานห้องเรียน
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">
+                จัดการคำขอจองห้อง
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                อนุมัติ ปฏิเสธ และตรวจสอบประวัติการใช้งานห้องเรียน
+              </p>
+            </div>
+
+            {/* 🔔 ไอคอนกระดิ่งแจ้งเตือน พร้อมตัวเลขคำขอที่รออนุมัติ */}
+            <button
+              onClick={() => setSelectedStatusTab('PENDING')}
+              title={`มีคำขอรออนุมัติ ${pendingCount} รายการ (คลิกเพื่อดู)`}
+              className="relative p-2.5 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 hover:border-amber-200 transition-all cursor-pointer group shrink-0"
+            >
+              <svg
+                className={`w-6 h-6 ${
+                  pendingCount > 0
+                    ? 'text-amber-500 animate-bounce'
+                    : 'text-slate-400'
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+
+              {/* Badge ตัวเลขสีแดงสดใส */}
+              {pendingCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 bg-rose-500 text-white text-xs font-extrabold rounded-full ring-2 ring-white shadow-sm animate-pulse">
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -491,6 +587,7 @@ export default function AdminBookingManagementPage() {
           </div>
         </div>
 
+        {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             <button
@@ -554,6 +651,7 @@ export default function AdminBookingManagementPage() {
           </span>
         </div>
 
+        {/* Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1120px] border-collapse text-left">
