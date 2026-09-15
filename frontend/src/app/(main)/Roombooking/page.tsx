@@ -1539,7 +1539,7 @@ export default function UserBookingPage() {
                     {" | วัน"}
                     {targetSlot.day}
                     {" ("}
-                    {targetSlot.date}
+                    {formatDateTH(targetSlot.date)}
                     {") | "}
                     {targetSlot.title}
                   </p>
