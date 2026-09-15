@@ -16,10 +16,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Roomify",
+  title: "Roomify at Udom",
   description: "ระบบจองห้องเรียนออนไลน์",
   icons: {
-    icon: "/Logo.png",
+    icon: "/LogoUdom.jpg",
   },
 };
 

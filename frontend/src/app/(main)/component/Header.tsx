@@ -11,15 +11,9 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 h-14 sm:h-16 flex items-center px-3 sm:px-4 justify-between shadow-xl ${
-        isLoading
-          ? "bg-[#1E88E5] text-white"
-          : "bg-app-header text-app-header-text"
-      }`}
-    >
-      <h1 className="text-base sm:text-lg font-bold shrink-0">
-        Roomify
-      </h1>
+      className={`sticky top-0 z-50 h-14 sm:h-16 flex items-center px-3 sm:px-4 justify-between shadow-xl ${isLoading? "bg-[#1E88E5] text-white": "bg-app-header text-app-header-text"}`}>
+      <img src="/frontend/public/LogoUdom.jpg" alt="Logo" />
+      <h1 className="text-white text-lg font-bold">Roomify at Udom</h1>
 
       {isLoading ? (
         <></>
