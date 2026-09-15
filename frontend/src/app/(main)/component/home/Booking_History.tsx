@@ -35,33 +35,51 @@ interface Booking {
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-function formatDateTH(dStr: string): string {
-  const d = new Date(dStr);
+const THAI_MONTHS_SHORT = [
+  "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+];
 
-  return d.toLocaleDateString("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "2-digit"
-  });
+// แปลงวันที่ทั่วไปเป็นไทย เรียง "วัน เดือน ปี (พ.ศ.)" เช่น "15 ก.ย. 69"
+function formatDateTH(dStr: string | Date): string {
+  if (!dStr) return "-";
+  const d = typeof dStr === "string" ? new Date(dStr) : dStr;
+  if (isNaN(d.getTime())) return "-";
+
+  const day = d.getDate();
+  const month = THAI_MONTHS_SHORT[d.getMonth()];
+  const year = (d.getFullYear() + 543).toString().slice(-2); // ปี พ.ศ. 2 หลัก เช่น 69
+
+  return `${day} ${month} ${year}`;
 }
 
+// แปลงเวลาไทย เช่น "08:30 น."
 function formatTimeTH(dStr: string): string {
+  if (!dStr) return "-";
   const d = new Date(dStr);
+  if (isNaN(d.getTime())) return "-";
 
   return d.toLocaleTimeString("th-TH", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Bangkok"
-  });
+  }) + " น.";
 }
 
+// แปลงวันที่จอง (YYYY-MM-DD) ให้เป็น วัน-เดือน(ไทย)-ปี(พ.ศ.)
+// เช่น "2026-09-15" -> "15 ก.ย. 69"
 function formatBookingDate(dateStr: string): string {
-  // รองรับวันที่จาก API ในรูปแบบ YYYY-MM-DD หรือ YYYY-MM-DDTHH:mm:ss...
+  if (!dateStr) return "-";
   const datePart = dateStr.split("T")[0];
-  const [year, month, day] = datePart.split("-");
+  const [yearStr, monthStr, dayStr] = datePart.split("-");
 
-  if (year && month && day) {
-    return `${day}-${month}-${year}`;
+  if (yearStr && monthStr && dayStr) {
+    const day = parseInt(dayStr, 10);
+    const monthIndex = parseInt(monthStr, 10) - 1;
+    const month = THAI_MONTHS_SHORT[monthIndex] || monthStr;
+    const year = (parseInt(yearStr, 10) + 543).toString().slice(-2);
+
+    return `${day} ${month} ${year}`;
   }
 
   return dateStr;
