@@ -67,6 +67,61 @@ function formatBookingDate(dateStr: string): string {
   return dateStr;
 }
 
+interface PeriodInfo {
+  label: string;
+  time: string;
+}
+
+const PERIOD_MAP: Record<number, PeriodInfo> = {
+  1: {
+    label: "คาบ 1",
+    time: "8:30-9:20",
+  },
+  2: {
+    label: "คาบ 2",
+    time: "9:20-10:10",
+  },
+  3: {
+    label: "คาบ 3",
+    time: "10:40-11:30",
+  },
+  4: {
+    label: "คาบ 4",
+    time: "11:30-12:20",
+  },
+  5: {
+    label: "คาบ 5",
+    time: "12:20-13:10",
+  },
+  6: {
+    label: "คาบ 6",
+    time: "13:10-14:00",
+  },
+  7: {
+    label: "คาบ 7",
+    time: "14:00-14:50",
+  },
+  8: {
+    label: "คาบ 8",
+    time: "14:50-15:40",
+  },
+  9: {
+    label: "คาบ 9",
+    time: "15:40-16:30",
+  },
+};
+
+function getPeriodInfo(period: number | string): PeriodInfo {
+  const value = Number(period);
+
+  return (
+    PERIOD_MAP[value] ?? {
+      label: `คาบ ${period}`,
+      time: "-",
+    }
+  );
+}
+
 export default function Booking_History() {
   const { user } = useAuth();
 
@@ -447,7 +502,12 @@ export default function Booking_History() {
 
                     <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                       <Clock className="w-3 h-3 text-slate-400" />
-                      คาบที่ {item.period}
+
+                      {getPeriodInfo(item.period).label}
+
+                      <span className="text-slate-300">
+                        ({getPeriodInfo(item.period).time})
+                      </span>
                     </div>
                   </td>
 
