@@ -12,8 +12,8 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-50 h-14 sm:h-16 flex items-center px-3 sm:px-4 justify-between shadow-xl ${isLoading? "bg-[#1E88E5] text-white": "bg-app-header text-app-header-text"}`}>
-      <img src="/frontend/public/LogoUdom.jpg" alt="Logo" />
-      <h1 className="text-white text-lg font-bold">Roomify at Udom</h1>
+      
+      <h1 className="text-white text-lg font-bold"><img src="/LogoUdom.jpg" alt="Logo" />Roomify at Udom</h1>
 
       {isLoading ? (
         <></>
