@@ -275,7 +275,7 @@ export default function Booking_History() {
 
     try {
       const res = await fetch(
-        `/api/bookings/${booking.id}/status`,
+        `${API}/bookings/${booking.id}/status`,
         {
           method: "PATCH",
           credentials: "include",
