@@ -251,7 +251,7 @@ export default function Booking_History() {
     }
   };
 
-  const handleCancel = async (booking: Booking) => {
+  const handleStatus = async (booking: Booking) => {
     if (actionLoadingId !== null) return;
 
     const result = await Swal.fire({
@@ -554,7 +554,7 @@ export default function Booking_History() {
                       <div className="flex flex-col items-center gap-1.5">
                         {!item.checkInTime && (
                           <button
-                            onClick={() => handleCancel(item)}
+                            onClick={() => handleStatus(item)}
                             disabled={actionLoadingId === item.id}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                           >
@@ -640,7 +640,7 @@ export default function Booking_History() {
 
                         {!item.checkInTime && (
                           <button
-                            onClick={() => handleCancel(item)}
+                            onClick={() => handleStatus(item)}
                             disabled={actionLoadingId === item.id}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                           >
