@@ -103,7 +103,7 @@ export default function Login () {
                         </div>
 
                         {/* Heading */}
-                        <div className="space-y-5">
+                        <div className="space-y-5 flex justify-center">
                             <h1 className="text-3xl md:text-4xl xl:text-5xl font-black text-slate-800 tracking-tight leading-tight">
                                 Roomify{" "}At{" "}<span className="text-blue-600">Udom</span>
                             </h1>
