@@ -39,7 +39,8 @@ interface BookingItem {
   period: string;
   purpose: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  roomUsageStatus?: 'IN' | 'OUT' | string; // ดึงสถานะการใช้งานห้องจากฐานข้อมูล
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
 }
 
 interface PublicPost {
@@ -140,6 +141,18 @@ function formatDateTH(d: Date | string): string {
     month: "short",
     year: "2-digit"
   });
+}
+
+function formatTimeTH(d: string): string {
+  try {
+    const dt = new Date(d);
+    return dt.toLocaleTimeString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  } catch {
+    return "";
+  }
 }
 
 function getPeriodTitle(p: string): string {
@@ -941,9 +954,14 @@ export default function UserBookingPage() {
               currentUser.name.trim()
           )
         );
-      
-      // ดึงสถานะการใช้ห้องจาก bookingItem โดยตรง (จากฐานข้อมูล)
-      const usageStatus = bookingItem.roomUsageStatus;
+
+      // คำนวณข้อความแสดงสถานะจาก checkInTime และ checkOutTime
+      let usageText = '<span class="text-slate-400">ยังไม่เข้าใช้งาน</span>';
+      if (bookingItem.checkOutTime) {
+        usageText = `<span class="text-slate-500 font-bold">⚪ ออกจากห้องแล้ว (${formatTimeTH(bookingItem.checkOutTime)} น.)</span>`;
+      } else if (bookingItem.checkInTime) {
+        usageText = `<span class="text-emerald-600 font-bold">🟢 กำลังใช้งานห้องอยู่ (เข้าห้อง ${formatTimeTH(bookingItem.checkInTime)} น.)</span>`;
+      }
 
       Swal.fire({
         title: isApproved
@@ -972,13 +990,7 @@ export default function UserBookingPage() {
                 ? `
                   <p class="text-xs mt-1">
                     <b>สถานะการใช้ห้อง:</b>
-                    ${
-                      usageStatus === 'IN'
-                        ? '<span class="text-emerald-600 font-bold">🟢 กำลังใช้งานห้องอยู่</span>'
-                        : usageStatus === 'OUT'
-                          ? '<span class="text-slate-500 font-bold">⚪ ออกจากห้องแล้ว</span>'
-                          : '<span class="text-slate-400">ยังไม่ระบุสถานะ</span>'
-                    }
+                    ${usageText}
                   </p>
                 `
                 : ''
