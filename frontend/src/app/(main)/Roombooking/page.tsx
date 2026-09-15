@@ -116,16 +116,12 @@ function formatDateISO(d: Date): string {
 }
 
 function formatDateTH(d: Date | string): string {
-  if (!d) return "-";
   const dt = typeof d === 'string' ? new Date(d) : d;
-  
-  if (isNaN(dt.getTime())) return "-";
-
-  const day = dt.getDate();
-  const month = dt.toLocaleDateString("th-TH", { month: "short" });
-  const year = dt.toLocaleDateString("th-TH", { year: "numeric" });
-
-  return `${day} ${month} ${year}`;
+  return dt.toLocaleDateString("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "2-digit"
+  });
 }
 
 function formatTimeTH(d: string): string {
