@@ -308,6 +308,7 @@ export default function Booking_History() {
         icon: "success",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#10b981",
+        heightAuto: false
       });
 
     } catch (err) {
@@ -319,6 +320,7 @@ export default function Booking_History() {
         icon: "error",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#ef4444",
+        heightAuto: false
       });
 
     } finally {

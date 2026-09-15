@@ -27,7 +27,7 @@ export async function PATCH(
     const cookie = request.headers.get("cookie");
 
     const res = await fetch(
-      `${API}/bookings/${id}/cancel`,
+      `${API}/bookings/${id}`,
       {
         method: "PATCH",
         headers: {
