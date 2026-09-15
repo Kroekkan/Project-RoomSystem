@@ -74,7 +74,6 @@ const days = [
 const periods = [
   "1",
   "2",
-  "พัก 30",
   "3",
   "4",
   "5",
@@ -82,6 +81,7 @@ const periods = [
   "7",
   "8",
   "9",
+  "10"
 ];
 
 const time = [
@@ -157,7 +157,7 @@ function formatTimeTH(d: string): string {
 
 function getPeriodTitle(p: string): string {
   const periodNumber = Number(p);
-  if (p === "พัก 30") {
+  if (periodNumber === 3) {
     return "พัก 30";
   }
   return `คาบ ${periodNumber > 3 ? periodNumber - 1 : periodNumber}`;
@@ -878,6 +878,7 @@ export default function UserBookingPage() {
         usageText = `<span class="text-emerald-600 font-bold">🟢 กำลังใช้งานห้องอยู่ (เข้าห้อง ${formatTimeTH(bookingItem.checkInTime)} น.)</span>`;
       }
 
+      // นำปุ่มยกเลิกการจองออก และแสดงเพียงปุ่มตกลง/รับทราบ
       Swal.fire({
         title: isApproved
           ? 'มีการจองและอนุมัติแล้ว'
