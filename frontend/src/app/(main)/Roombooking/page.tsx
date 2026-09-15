@@ -759,71 +759,6 @@ export default function UserBookingPage() {
     );
   };
 
-  const handleCancelBooking = async (
-    bookingId: number,
-    userName: string
-  ) => {
-    const confirm =
-      await Swal.fire({
-        title:
-          'ยกเลิกรายการจองนี้?',
-        text:
-          `ต้องการยกเลิกการจองของคุณ "${userName}" ใช่หรือไม่`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor:
-          '#ef4444',
-        cancelButtonColor:
-          '#6b7280',
-        confirmButtonText:
-          'ยืนยันยกเลิก',
-        cancelButtonText:
-          'ย้อนกลับ',
-        heightAuto: false
-      });
-    if (confirm.isConfirmed) {
-      try {
-        const res = await fetch(
-          `${API}/bookings/${bookingId}/status`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-            body: JSON.stringify({
-              status:
-                'CANCELLED'
-            })
-          }
-        );
-        if (res.ok) {
-          if (selectedRoom) {
-            fetchFullSchedule(
-              selectedRoom.id,
-              false
-            );
-          }
-          Swal.fire({
-            title:
-              'ยกเลิกการจองสำเร็จ!',
-            icon: 'success',
-            timer: 1500,
-            showConfirmButton: false,
-            heightAuto: false
-          });
-        }
-      } catch {
-        Swal.fire({
-          title:
-            'เกิดข้อผิดพลาด',
-          icon: 'error',
-          heightAuto: false
-        });
-      }
-    }
-  };
-
   const handleSlotClick = (
     day: string,
     dateStr: string,
@@ -934,26 +869,6 @@ export default function UserBookingPage() {
       const isApproved =
         bookingItem.status ===
         'APPROVED';
-      const isMyBooking =
-        currentUser &&
-        (
-          (
-            bookingItem.userId !==
-              undefined &&
-            String(
-              bookingItem.userId
-            ) ===
-              String(
-                currentUser.id
-              )
-          ) ||
-          (
-            bookingItem.userName &&
-            currentUser.name &&
-            bookingItem.userName.trim() ===
-              currentUser.name.trim()
-          )
-        );
 
       // คำนวณข้อความแสดงสถานะจาก checkInTime และ checkOutTime
       let usageText = '<span class="text-slate-400">ยังไม่เข้าใช้งาน</span>';
@@ -1001,20 +916,9 @@ export default function UserBookingPage() {
           isApproved
             ? 'error'
             : 'warning',
-        showDenyButton:
-          Boolean(isMyBooking),
-        denyButtonText:
-          '🗑️ ยกเลิกการจอง',
-        denyButtonColor:
-          '#ef4444',
+        confirmButtonColor: '#6366f1',
+        confirmButtonText: 'ตกลง',
         heightAuto: false
-      }).then(result => {
-        if (result.isDenied) {
-          handleCancelBooking(
-            bookingItem.id,
-            bookingItem.userName
-          );
-        }
       });
       return;
     }
