@@ -442,40 +442,24 @@ export default function AdminBookingManagementPage() {
               <p className="mt-1 text-sm text-slate-500">อนุมัติ ปฏิเสธ และตรวจสอบประวัติการใช้งานห้องเรียน</p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* 🔔 ไอคอนกระดิ่ง */}
-              <button
-                onClick={() => handleStatusTabChange('PENDING')}
-                title={`มีคำขอรออนุมัติ ${pendingCount} รายการ`}
-                className="relative p-2.5 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 hover:border-amber-200 transition-all cursor-pointer shrink-0"
-              >
-                <svg className={`w-6 h-6 ${pendingCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {pendingCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 bg-rose-500 text-white text-xs font-extrabold rounded-full ring-2 ring-white shadow-sm animate-pulse">
-                    {pendingCount > 99 ? '99+' : pendingCount}
-                  </span>
-                )}
-              </button>
-
-              {/* 🟢 ปุ่มเชื่อมต่อ LINE Login สำหรับแอดมิน */}
-              <button
-                onClick={() => {
-                  window.location.href = `${API}/auth/line`;
-                }}
-                className="flex items-center gap-2 px-3.5 py-2.5 bg-[#06C755] hover:bg-[#05b34c] text-white text-xs font-bold rounded-2xl shadow-sm transition-all cursor-pointer shrink-0"
-                title="เชื่อมต่อบัญชี LINE เพื่อรับแจ้งเตือนคำขอจอง"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .63.285.63.63 0 .349-.284.631-.63.631H17.61v1.124h1.755zM5.25 13.487V8.108c0-.345.282-.63.63-.63.349 0 .63.285.63.63v4.749h2.385c.346 0 .63.285.63.63 0 .349-.284.63-.63.63H5.88c-.348 0-.63-.281-.63-.63zm10.125-5.379c.349 0 .63.285.63.63v5.379c0 .345-.281.63-.63.63-.346 0-.627-.285-.627-.63V8.738c0-.345.281-.63.627-.63zm-4.75 0c.349 0 .63.285.63.63v3.78l2.196-4.108c.135-.252.401-.402.692-.402.438 0 .75.352.75.789 0 .142-.041.282-.12.399l-2.736 5.122v1.317c0 .345-.282.63-.63.63-.349 0-.63-.285-.63-.63v-3.78l-2.196 4.108c-.135.252-.401.402-.692.402-.438 0-.75-.352-.75-.789 0-.142.041-.282.12-.399l2.736-5.122V8.738c0-.345.282-.63.63-.63z" />
-                </svg>
-                <span>เชื่อมต่อ LINE Admin</span>
-              </button>
-            </div>
+            {/* 🔔 ไอคอนกระดิ่ง */}
+            <button
+              onClick={() => handleStatusTabChange('PENDING')}
+              title={`มีคำขอรออนุมัติ ${pendingCount} รายการ`}
+              className="relative p-2.5 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 hover:border-amber-200 transition-all cursor-pointer shrink-0"
+            >
+              <svg className={`w-6 h-6 ${pendingCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {pendingCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 bg-rose-500 text-white text-xs font-extrabold rounded-full ring-2 ring-white shadow-sm animate-pulse">
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </span>
+              )}
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
             {/* ช่องค้นหา */}
             <input
               type="text"
