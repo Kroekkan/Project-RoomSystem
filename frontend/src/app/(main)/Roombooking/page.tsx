@@ -174,6 +174,11 @@ export default function UserBookingPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // สถานะการเข้า-ออกห้องเรียนของแต่ละรายการจอง (เก็บฝั่ง client)
+  const [roomUsageStatus, setRoomUsageStatus] = useState<
+    Record<number, 'IN' | 'OUT'>
+  >({});
+
   const [currentMonday, setCurrentMonday] = useState<Date>(
     getMonday(new Date())
   );
@@ -1055,6 +1060,9 @@ export default function UserBookingPage() {
           )
         );
 
+      const usageStatus =
+        roomUsageStatus[bookingItem.id];
+
       Swal.fire({
         title: isApproved
           ? 'มีการจองและอนุมัติแล้ว'
@@ -1080,6 +1088,41 @@ export default function UserBookingPage() {
                   : '<span class="text-amber-600 font-bold">⏳ รออนุมัติ</span>'
               }
             </p>
+
+            ${
+              isApproved
+                ? `
+                  <p class="text-xs mt-1">
+                    <b>สถานะการใช้ห้อง:</b>
+                    ${
+                      usageStatus === 'IN'
+                        ? '<span class="text-emerald-600 font-bold">🟢 กำลังใช้งานห้องอยู่</span>'
+                        : usageStatus === 'OUT'
+                          ? '<span class="text-slate-500 font-bold">⚪ ออกจากห้องแล้ว</span>'
+                          : '<span class="text-slate-400">ยังไม่ระบุสถานะ</span>'
+                    }
+                  </p>
+
+                  <div class="flex gap-2 mt-3">
+                    <button
+                      id="room-entry-btn"
+                      type="button"
+                      class="flex-1 px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                    >
+                      🚪 เข้าห้องเรียน
+                    </button>
+
+                    <button
+                      id="room-exit-btn"
+                      type="button"
+                      class="flex-1 px-3 py-2 rounded-xl bg-slate-600 text-white text-xs font-bold hover:bg-slate-700 cursor-pointer"
+                    >
+                      🚶 ออกห้องเรียน
+                    </button>
+                  </div>
+                `
+                : ''
+            }
           </div>
         `,
 
@@ -1097,7 +1140,67 @@ export default function UserBookingPage() {
         denyButtonColor:
           '#ef4444',
 
-        heightAuto: false
+        heightAuto: false,
+
+        didOpen: () => {
+          const entryBtn =
+            document.getElementById(
+              'room-entry-btn'
+            );
+
+          const exitBtn =
+            document.getElementById(
+              'room-exit-btn'
+            );
+
+          entryBtn?.addEventListener(
+            'click',
+            () => {
+              setRoomUsageStatus(
+                prev => ({
+                  ...prev,
+                  [bookingItem.id]: 'IN'
+                })
+              );
+
+              Swal.fire({
+                title:
+                  'เข้าใช้ห้องเรียนแล้ว',
+
+                text: `ห้อง ${selectedRoom?.name} กำลังใช้งานอยู่`,
+
+                icon: 'success',
+                timer: 1300,
+                showConfirmButton: false,
+                heightAuto: false
+              });
+            }
+          );
+
+          exitBtn?.addEventListener(
+            'click',
+            () => {
+              setRoomUsageStatus(
+                prev => ({
+                  ...prev,
+                  [bookingItem.id]: 'OUT'
+                })
+              );
+
+              Swal.fire({
+                title:
+                  'ออกจากห้องเรียนแล้ว',
+
+                text: `ห้อง ${selectedRoom?.name} ออกจากห้องแล้ว`,
+
+                icon: 'info',
+                timer: 1300,
+                showConfirmButton: false,
+                heightAuto: false
+              });
+            }
+          );
+        }
       }).then(result => {
         if (result.isDenied) {
           handleCancelBooking(
@@ -1751,6 +1854,29 @@ export default function UserBookingPage() {
 
                                         <span className="text-[9px] sm:text-[10px] text-slate-500 truncate w-full mt-0.5">
                                           {maintenanceToday.title}
+                                        </span>
+
+                                      </div>
+
+                                    </td>
+                                  );
+                                }
+
+                                // period 3 = ช่วงพัก 30 นาที ไม่ใช่คาบให้จอง
+                                // แสดงเป็น "พัก 30" และกดจองไม่ได้
+                                if (p === "3") {
+
+                                  return (
+
+                                    <td
+                                      key={p}
+                                      className="p-1 sm:p-1.5 text-center"
+                                    >
+
+                                      <div className="h-16 sm:h-18 rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-100 text-slate-400 p-1 flex flex-col items-center justify-center shadow-2xs cursor-not-allowed select-none">
+
+                                        <span className="font-bold text-[10px] sm:text-xs truncate w-full">
+                                          ☕ พัก 30
                                         </span>
 
                                       </div>
