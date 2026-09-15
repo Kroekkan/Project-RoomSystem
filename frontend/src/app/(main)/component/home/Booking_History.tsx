@@ -274,6 +274,7 @@ export default function Booking_History() {
     setActionLoadingId(booking.id);
 
     try {
+      // แนบ body: { status: 'CANCELLED' } ส่งไปยัง API
       const res = await fetch(
         `${API}/bookings/${booking.id}/status`,
         {
@@ -282,11 +283,15 @@ export default function Booking_History() {
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            status: "CANCELLED",
+          }),
         }
       );
 
       if (!res.ok) {
-        throw new Error("cancel failed");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.message || "cancel failed");
       }
 
       setHistory((prev) =>
@@ -556,7 +561,7 @@ export default function Booking_History() {
                           <button
                             onClick={() => handleStatus(item)}
                             disabled={actionLoadingId === item.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
                           >
                             <XCircle className="w-3.5 h-3.5" />
                             {actionLoadingId === item.id
@@ -583,7 +588,7 @@ export default function Booking_History() {
                               actionLoadingId ===
                               item.id
                             }
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-sky-100 text-sky-700 border border-sky-200 hover:bg-sky-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-sky-100 text-sky-700 border border-sky-200 hover:bg-sky-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
                           >
                             <LogIn className="w-3.5 h-3.5" />
 
@@ -617,7 +622,7 @@ export default function Booking_History() {
                                 actionLoadingId ===
                                 item.id
                               }
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
                             >
                               <LogOut className="w-3.5 h-3.5" />
 
@@ -642,7 +647,7 @@ export default function Booking_History() {
                           <button
                             onClick={() => handleStatus(item)}
                             disabled={actionLoadingId === item.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
                           >
                             <XCircle className="w-3.5 h-3.5" />
                             {actionLoadingId === item.id
