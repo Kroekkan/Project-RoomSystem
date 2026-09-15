@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import Swal from 'sweetalert2';
 
 interface Booking {
@@ -28,13 +28,16 @@ interface Room {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const ITEMS_PER_PAGE = 10; // 📄 กำหนดให้แสดงหน้าละ 10 รายการ
 
 // 🔊 ฟังก์ชันเล่นเสียงกระดิ่ง "กริ๊งๆ" ด้วย Web Audio API
 function playNotificationSound() {
   if (typeof window === 'undefined') return;
 
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext })['webkitAudioContext'];
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })['webkitAudioContext'];
     if (!AudioCtx) return;
 
     const ctx = new AudioCtx();
@@ -145,6 +148,9 @@ export default function AdminBookingManagementPage() {
   const [selectedStatusTab, setSelectedStatusTab] = useState('ALL');
   const [selectedRoomFilter, setSelectedRoomFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // 📄 State สำหรับการแบ่งหน้า (Pagination)
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   // 🔔 เก็บจำนวน PENDING ล่าสุดไว้เทียบตอน polling ว่ามีเพิ่มขึ้นหรือไม่
   const prevPendingCountRef = useRef<number | null>(null);
@@ -466,32 +472,59 @@ export default function AdminBookingManagementPage() {
     });
   };
 
-  const filteredBookings = bookings.filter((booking) => {
-    if (
-      selectedStatusTab !== 'ALL' &&
-      booking.status !== selectedStatusTab
-    ) {
-      return false;
-    }
+  // Filter รายการจองตาม Tab, Room, และ Search Query
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking) => {
+      if (
+        selectedStatusTab !== 'ALL' &&
+        booking.status !== selectedStatusTab
+      ) {
+        return false;
+      }
 
-    if (
-      selectedRoomFilter !== 'ALL' &&
-      booking.roomId !== Number(selectedRoomFilter)
-    ) {
-      return false;
-    }
+      if (
+        selectedRoomFilter !== 'ALL' &&
+        booking.roomId !== Number(selectedRoomFilter)
+      ) {
+        return false;
+      }
 
-    const query = searchQuery.toLowerCase().trim();
+      const query = searchQuery.toLowerCase().trim();
 
-    if (!query) return true;
+      if (!query) return true;
 
-    return (
-      booking.userName?.toLowerCase().includes(query) ||
-      booking.purpose?.toLowerCase().includes(query) ||
-      booking.phone?.toLowerCase().includes(query) ||
-      booking.lineId?.toLowerCase().includes(query)
-    );
-  });
+      return (
+        booking.userName?.toLowerCase().includes(query) ||
+        booking.purpose?.toLowerCase().includes(query) ||
+        booking.phone?.toLowerCase().includes(query) ||
+        booking.lineId?.toLowerCase().includes(query)
+      );
+    });
+  }, [bookings, selectedStatusTab, selectedRoomFilter, searchQuery]);
+
+  // 📄 คำนวณจำนวนหน้าทั้งหมด และตัดรายการเฉพาะหน้าปัจจุบัน
+  const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredBookings.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredBookings, currentPage]);
+
+  // เมื่อเปลี่ยนเงื่อนไขการค้นหา หรือแท็บ ให้ Reset กลับไปหน้า 1
+  const handleStatusTabChange = (tab: string) => {
+    setSelectedStatusTab(tab);
+    setCurrentPage(1);
+  };
+
+  const handleRoomFilterChange = (roomId: string) => {
+    setSelectedRoomFilter(roomId);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  };
 
   const pendingCount = bookings.filter(
     (booking) => booking.status === 'PENDING',
@@ -529,7 +562,7 @@ export default function AdminBookingManagementPage() {
 
             {/* 🔔 ไอคอนกระดิ่งแจ้งเตือน พร้อมตัวเลขคำขอที่รออนุมัติ */}
             <button
-              onClick={() => setSelectedStatusTab('PENDING')}
+              onClick={() => handleStatusTabChange('PENDING')}
               title={`มีคำขอรออนุมัติ ${pendingCount} รายการ (คลิกเพื่อดู)`}
               className="relative p-2.5 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 hover:border-amber-200 transition-all cursor-pointer group shrink-0"
             >
@@ -564,16 +597,14 @@ export default function AdminBookingManagementPage() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               placeholder="🔍 ค้นชื่อ, วัตถุประสงค์, เบอร์..."
               className="min-w-[220px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
 
             <select
               value={selectedRoomFilter}
-              onChange={(event) =>
-                setSelectedRoomFilter(event.target.value)
-              }
+              onChange={(event) => handleRoomFilterChange(event.target.value)}
               className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             >
               <option value="ALL">ทุกห้อง</option>
@@ -591,7 +622,7 @@ export default function AdminBookingManagementPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setSelectedStatusTab('ALL')}
+              onClick={() => handleStatusTabChange('ALL')}
               className={`cursor-pointer rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 selectedStatusTab === 'ALL'
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -602,7 +633,7 @@ export default function AdminBookingManagementPage() {
             </button>
 
             <button
-              onClick={() => setSelectedStatusTab('PENDING')}
+              onClick={() => handleStatusTabChange('PENDING')}
               className={`cursor-pointer rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 selectedStatusTab === 'PENDING'
                   ? 'bg-amber-500 text-white shadow-sm'
@@ -613,7 +644,7 @@ export default function AdminBookingManagementPage() {
             </button>
 
             <button
-              onClick={() => setSelectedStatusTab('APPROVED')}
+              onClick={() => handleStatusTabChange('APPROVED')}
               className={`cursor-pointer rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 selectedStatusTab === 'APPROVED'
                   ? 'bg-emerald-600 text-white shadow-sm'
@@ -624,7 +655,7 @@ export default function AdminBookingManagementPage() {
             </button>
 
             <button
-              onClick={() => setSelectedStatusTab('REJECTED')}
+              onClick={() => handleStatusTabChange('REJECTED')}
               className={`cursor-pointer rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 selectedStatusTab === 'REJECTED'
                   ? 'bg-rose-600 text-white shadow-sm'
@@ -635,7 +666,7 @@ export default function AdminBookingManagementPage() {
             </button>
 
             <button
-              onClick={() => setSelectedStatusTab('CANCELLED')}
+              onClick={() => handleStatusTabChange('CANCELLED')}
               className={`cursor-pointer rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                 selectedStatusTab === 'CANCELLED'
                   ? 'bg-slate-700 text-white shadow-sm'
@@ -647,7 +678,7 @@ export default function AdminBookingManagementPage() {
           </div>
 
           <span className="text-xs text-slate-400">
-            แสดง {filteredBookings.length} รายการ
+            แสดง {filteredBookings.length} รายการ (หน้าละ {ITEMS_PER_PAGE} รายการ)
           </span>
         </div>
 
@@ -678,7 +709,7 @@ export default function AdminBookingManagementPage() {
                       ))}
                     </tr>
                   ))
-                ) : filteredBookings.length === 0 ? (
+                ) : paginatedBookings.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
@@ -691,7 +722,7 @@ export default function AdminBookingManagementPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredBookings.map((item) => {
+                  paginatedBookings.map((item) => {
                     const status = getStatusInfo(item.status);
 
                     return (
@@ -856,6 +887,96 @@ export default function AdminBookingManagementPage() {
               </tbody>
             </table>
           </div>
+
+          {/* =====================================================
+              📄 ส่วนควบคุมการแบ่งหน้า (PAGINATION)
+          ===================================================== */}
+          {filteredBookings.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-slate-150 bg-slate-50/50">
+              <span className="text-xs text-slate-500">
+                แสดงลำดับที่{' '}
+                <strong className="text-slate-800">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </strong>{' '}
+                ถึง{' '}
+                <strong className="text-slate-800">
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredBookings.length)}
+                </strong>{' '}
+                จากทั้งหมด{' '}
+                <strong className="text-slate-800">
+                  {filteredBookings.length}
+                </strong>{' '}
+                รายการ
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                {/* ปุ่มย้อนกลับ */}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                    currentPage === 1
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer shadow-xs'
+                  }`}
+                >
+                  ◀ ก่อนหน้า
+                </button>
+
+                {/* ปุ่มตัวเลขหน้า */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // แสดงหน้าแรก, หน้าสุดท้าย, และหน้าใกล้เคียงหน้าปัจจุบัน
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, index, array) => {
+                      const prevPageNumber = array[index - 1];
+                      const hasGap = prevPageNumber && page - prevPageNumber > 1;
+
+                      return (
+                        <div key={page} className="flex items-center gap-1">
+                          {hasGap && (
+                            <span className="px-1 text-slate-400 text-xs font-bold">
+                              ...
+                            </span>
+                          )}
+                          <button
+                            onClick={() => setCurrentPage(page)}
+                            className={`min-w-[32px] h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              currentPage === page
+                                ? 'bg-indigo-600 text-white shadow-sm'
+                                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* ปุ่มถัดไป */}
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer shadow-xs'
+                  }`}
+                >
+                  ถัดไป ▶
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
