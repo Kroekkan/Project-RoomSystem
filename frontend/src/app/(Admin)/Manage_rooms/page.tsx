@@ -459,62 +459,68 @@ export default function AdminBookingManagementPage() {
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+            {/* ช่องค้นหา */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="🔍 ค้นชื่อ, วัตถุประสงค์, เบอร์..."
-              className="min-w-[220px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-w-[200px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
-          </div>
-        </div>
 
-        {/* =====================================================
-            🟢 ตัวกรอง อาคาร → หมวดหมู่ห้อง → ห้อง
-        ===================================================== */}
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          {/* Label อาคาร */}
-          <span className="text-xs font-bold text-slate-500 shrink-0">อาคาร:</span>
-          <select
-            value={selectedBuilding}
-            onChange={(e) => handleBuildingChange(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-          >
-            <option value="ALL">ทุกอาคาร</option>
-            {buildings.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </select>
-
-          {/* Divider */}
-          <span className="text-slate-300 font-bold hidden sm:inline">|</span>
-
-          {/* Label ห้อง */}
-          <span className="text-xs font-bold text-slate-500 shrink-0">ห้อง:</span>
-          <select
-            value={selectedRoomFilter}
-            onChange={(e) => handleRoomFilterChange(e.target.value)}
-            disabled={availableRooms.length === 0}
-            className={`rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
-              availableRooms.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <option value="ALL">-- เลือกห้อง --</option>
-            {availableRooms.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-
-          {/* ปุ่ม Reset ตัวกรอง */}
-          {hasActiveFilter && (
-            <button
-              onClick={resetAllFilters}
-              className="ml-auto text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+            {/* 🟢 ตัวกรอง อาคาร */}
+            <select
+              value={selectedBuilding}
+              onChange={(e) => handleBuildingChange(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             >
-              ✕ ล้างตัวกรอง
-            </button>
-          )}
+              <option value="ALL">🏢 ทุกอาคาร</option>
+              {buildings.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+
+            {/* 🟢 ตัวกรอง หมวดหมู่ห้อง */}
+            <select
+              value={selectedRoomCategory}
+              onChange={(e) => handleRoomCategoryChange(e.target.value)}
+              disabled={roomCategories.length === 0}
+              className={`rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
+                roomCategories.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <option value="ALL">📂 ทุกหมวดหมู่</option>
+              {roomCategories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* 🟢 ตัวกรอง ห้อง */}
+            <select
+              value={selectedRoomFilter}
+              onChange={(e) => handleRoomFilterChange(e.target.value)}
+              disabled={availableRooms.length === 0}
+              className={`rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
+                availableRooms.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <option value="ALL">🚪 ทุกห้อง</option>
+              {availableRooms.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+
+            {/* ปุ่ม Reset ตัวกรอง */}
+            {hasActiveFilter && (
+              <button
+                onClick={resetAllFilters}
+                className="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-2 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
+              >
+                ✕ ล้าง
+              </button>
+            )}
+          </div>
         </div>
 
         {/* =====================================================
