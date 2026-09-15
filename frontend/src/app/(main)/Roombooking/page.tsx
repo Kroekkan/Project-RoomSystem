@@ -1636,6 +1636,22 @@ export default function UserBookingPage() {
                         </button>
                       )}
 
+                      {/* กล่องคำแนะนำขั้นตอนการเชื่อมต่อ LINE พร้อมเครื่องหมายเตือน */}
+                        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 shadow-xs">
+                          <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1.5">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                            <span>⚠️ โปรดอ่านขั้นตอนก่อนเชื่อมต่อ LINE</span>
+                          </div>
+                          <ol className="list-decimal list-inside space-y-1 text-slate-700 pl-0.5 leading-relaxed">
+                            <li>
+                              <span className="font-medium text-slate-900">สแกน QR code</span> ด้านล่างนี้เพื่อแอด LINE ของระบบ
+                            </li>
+                            <li>
+                              กดปุ่ม <span className="font-semibold text-emerald-700">"เชื่อมต่อ Line เพื่อรับแจ้งเตือน"</span> ด้านบน แล้วเข้าสู่ระบบ (Login) ด้วยบัญชี LINE
+                            </li>
+                          </ol>
+                        </div>
+
                       {/* QR */}
                       <div className="mt-3 p-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-2">
                         <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 text-center leading-relaxed">
