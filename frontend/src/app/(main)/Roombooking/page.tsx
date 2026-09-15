@@ -68,26 +68,27 @@ const days = [
   "อาทิตย์"
 ];
 
-// กำหนดนิยามของ 10 คอลัมน์ให้ตรงเป๊ะ:
-// คาบ 1, คาบ 2, พัก 30, คาบ 3, คาบ 4, คาบ 5, คาบ 6, คาบ 7, คาบ 8, คาบ 9
+// แมปตรงตามโครงสร้างฐานข้อมูลของระบบ:
+// ใน DB: 1=คาบ1, 2=คาบ2, 3=พัก30, 4=คาบ3, 5=คาบ4, 6=คาบ5, 7=คาบ6, 8=คาบ7, 9=คาบ8, 10=คาบ9
 interface PeriodSlot {
   title: string;
-  dbPeriod: string | null; // ค่าที่เก็บลง DB จริง (null คือช่วงพัก)
+  dbPeriod: string; // เลข period จริงใน DB
+  isBreak?: boolean; // เป็นช่วงพักหรือไม่
   time: string;
   shortenTime: string;
 }
 
 const PERIOD_SLOTS: PeriodSlot[] = [
-  { title: "คาบ 1", dbPeriod: "1", time: "8:30-9:20", shortenTime: "8:30-9:10" },
-  { title: "คาบ 2", dbPeriod: "2", time: "9:20-10:10", shortenTime: "9:10-9:50" },
-  { title: "พัก 30", dbPeriod: null, time: "10:10-10:40", shortenTime: "9:50-10:20" },
-  { title: "คาบ 3", dbPeriod: "3", time: "10:40-11:30", shortenTime: "10:20-11:00" },
-  { title: "คาบ 4", dbPeriod: "4", time: "11:30-12:20", shortenTime: "11:00-11:40" },
-  { title: "คาบ 5", dbPeriod: "5", time: "12:20-13:10", shortenTime: "11:40-12:20" },
-  { title: "คาบ 6", dbPeriod: "6", time: "13:10-14:00", shortenTime: "12:20-13:00" },
-  { title: "คาบ 7", dbPeriod: "7", time: "14:00-14:50", shortenTime: "13:00-13:40" },
-  { title: "คาบ 8", dbPeriod: "8", time: "14:50-15:40", shortenTime: "13:40-14:20" },
-  { title: "คาบ 9", dbPeriod: "9", time: "15:40-16:30", shortenTime: "14:20-15:00" },
+  { title: "คาบที่ 1", dbPeriod: "1", time: "8:30-9:20", shortenTime: "8:30-9:10" },
+  { title: "คาบที่ 2", dbPeriod: "2", time: "9:20-10:10", shortenTime: "9:10-9:50" },
+  { title: "พัก 30", dbPeriod: "3", isBreak: true, time: "10:10-10:40", shortenTime: "9:50-10:20" },
+  { title: "คาบที่ 3", dbPeriod: "4", time: "10:40-11:30", shortenTime: "10:20-11:00" },
+  { title: "คาบที่ 4", dbPeriod: "5", time: "11:30-12:20", shortenTime: "11:00-11:40" },
+  { title: "คาบที่ 5", dbPeriod: "6", time: "12:20-13:10", shortenTime: "11:40-12:20" },
+  { title: "คาบที่ 6", dbPeriod: "7", time: "13:10-14:00", shortenTime: "12:20-13:00" },
+  { title: "คาบที่ 7", dbPeriod: "8", time: "14:00-14:50", shortenTime: "13:00-13:40" },
+  { title: "คาบที่ 8", dbPeriod: "9", time: "14:50-15:40", shortenTime: "13:40-14:20" },
+  { title: "คาบที่ 9", dbPeriod: "10", time: "15:40-16:30", shortenTime: "14:20-15:00" },
 ];
 
 function getMonday(d: Date): Date {
@@ -156,8 +157,8 @@ export default function UserBookingPage() {
   const [targetSlot, setTargetSlot] = useState<{
     day: string;
     date: string;
-    period: string; // เลขคาบจริงใน DB เช่น "1", "2", "3", "5"
-    title: string;  // เช่น "คาบ 5"
+    period: string; // dbPeriod: "4", "5", "6"
+    title: string;  // "คาบที่ 3", "คาบที่ 5"
   } | null>(null);
 
   const [phone, setPhone] = useState("");
@@ -734,8 +735,8 @@ export default function UserBookingPage() {
     dateStr: string,
     slot: PeriodSlot
   ) => {
-    // ถ้าเป็นช่วงพัก 30 ไม่สามารถจองได้
-    if (!slot.dbPeriod) {
+    // ช่วงพัก 30 ไม่ให้จอง
+    if (slot.isBreak) {
       return;
     }
 
@@ -957,7 +958,7 @@ export default function UserBookingPage() {
                 date:
                   targetSlot.date,
                 period:
-                  targetSlot.period, // ส่งคาบจริง 1, 2, 3, 4, 5, ... 9
+                  targetSlot.period, // ส่งเลขคาบจริงตรงตาม DB เช่น คาบ 3 คือ 4, คาบ 5 คือ 6
                 purpose:
                   purpose.trim()
               })
@@ -1413,7 +1414,7 @@ export default function UserBookingPage() {
                                 }
 
                                 // ช่องพัก 30
-                                if (!slot.dbPeriod) {
+                                if (slot.isBreak) {
                                   return (
                                     <td
                                       key={slot.title + slot.time}
