@@ -106,7 +106,14 @@ export function Header_Admin() {
   return (
     <header className={`sticky top-0 z-50 h-16 flex items-center px-4 justify-between shadow-xl ${isLoading ? "bg-[#1E88E5] text-white" : "bg-app-header text-app-header-text"}`}>
       
-      <h1 className="text-white text-lg font-bold"><img src="/LogoUdom.jpg" alt="Logo" />Roomify at Udom</h1>
+      <div className="flex items-center gap-2">
+        <img 
+          src="/LogoUdom.jpg" 
+          alt="Logo" 
+          className="h-8 w-8 object-cover rounded-full" 
+        />
+        <h1 className="text-white text-lg font-bold">Roomify at Udom</h1>
+      </div>
 
       {isLoading ? (
         <></>
