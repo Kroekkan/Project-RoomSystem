@@ -110,7 +110,8 @@ export default function Login () {
 
                             <p className="flex justify-center text-slate-500 text-sm md:text-base leading-7 max-w-lg">
                                 ตรวจสอบตารางใช้ห้องประจำ จองห้องเรียนชดเชยหรือห้องปฏิบัติการ
-                                <hr />
+                            </p>
+                            <p className="flex justify-center text-slate-500 text-sm md:text-base leading-7 max-w-lg">
                                 ได้ทันทีพร้อมรับผลการอนุมัติจากผู้ดูแลระบบผ่านแชท LINE
                             </p>
                         </div>
