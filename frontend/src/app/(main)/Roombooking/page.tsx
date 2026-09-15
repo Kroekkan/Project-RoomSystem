@@ -68,46 +68,26 @@ const days = [
   "อาทิตย์"
 ];
 
-// ใช้ค่า period จริงจากฐานข้อมูลเหมือนหน้าแอดมิน
-// 3 = ช่วงพัก 30 นาที และคาบหลังจากนั้นยังใช้เลขจริง 4-10
-// ส่วนหัวตารางจะแสดง 4 เป็น "คาบ 3", 5 เป็น "คาบ 4" ... 10 เป็น "คาบ 9"
-const periods = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10"
-];
+// กำหนดนิยามของ 10 คอลัมน์ให้ตรงเป๊ะ:
+// คาบ 1, คาบ 2, พัก 30, คาบ 3, คาบ 4, คาบ 5, คาบ 6, คาบ 7, คาบ 8, คาบ 9
+interface PeriodSlot {
+  title: string;
+  dbPeriod: string | null; // ค่าที่เก็บลง DB จริง (null คือช่วงพัก)
+  time: string;
+  shortenTime: string;
+}
 
-const time = [
-  "8:30-9:20",
-  "9:20-10:10",
-  "10:10-10:40",
-  "10:40-11:30",
-  "11:30-12:20",
-  "12:20-13:10",
-  "13:10-14:00",
-  "14:00-14:50",
-  "14:50-15:40",
-  "15:40-16:30"
-];
-
-const Shortentime = [
-  "8:30-9:10",
-  "9:10-9:50",
-  "9:50-10:20",
-  "10:20-11:00",
-  "11:00-11:40",
-  "11:40-12:20",
-  "12:20-13:00",
-  "13:00-13:40",
-  "13:40-14:20",
-  "14:20-15:00"
+const PERIOD_SLOTS: PeriodSlot[] = [
+  { title: "คาบ 1", dbPeriod: "1", time: "8:30-9:20", shortenTime: "8:30-9:10" },
+  { title: "คาบ 2", dbPeriod: "2", time: "9:20-10:10", shortenTime: "9:10-9:50" },
+  { title: "พัก 30", dbPeriod: null, time: "10:10-10:40", shortenTime: "9:50-10:20" },
+  { title: "คาบ 3", dbPeriod: "3", time: "10:40-11:30", shortenTime: "10:20-11:00" },
+  { title: "คาบ 4", dbPeriod: "4", time: "11:30-12:20", shortenTime: "11:00-11:40" },
+  { title: "คาบ 5", dbPeriod: "5", time: "12:20-13:10", shortenTime: "11:40-12:20" },
+  { title: "คาบ 6", dbPeriod: "6", time: "13:10-14:00", shortenTime: "12:20-13:00" },
+  { title: "คาบ 7", dbPeriod: "7", time: "14:00-14:50", shortenTime: "13:00-13:40" },
+  { title: "คาบ 8", dbPeriod: "8", time: "14:50-15:40", shortenTime: "13:40-14:20" },
+  { title: "คาบ 9", dbPeriod: "9", time: "15:40-16:30", shortenTime: "14:20-15:00" },
 ];
 
 function getMonday(d: Date): Date {
@@ -155,14 +135,6 @@ function formatTimeTH(d: string): string {
   }
 }
 
-function getPeriodTitle(p: string): string {
-  const periodNumber = Number(p);
-  if (periodNumber === 3) {
-    return "พัก 30";
-  }
-  return `คาบ ${periodNumber > 3 ? periodNumber - 1 : periodNumber}`;
-}
-
 export default function UserBookingPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -184,7 +156,8 @@ export default function UserBookingPage() {
   const [targetSlot, setTargetSlot] = useState<{
     day: string;
     date: string;
-    period: string;
+    period: string; // เลขคาบจริงใน DB เช่น "1", "2", "3", "5"
+    title: string;  // เช่น "คาบ 5"
   } | null>(null);
 
   const [phone, setPhone] = useState("");
@@ -204,6 +177,7 @@ export default function UserBookingPage() {
         day: string;
         date: string;
         period: string;
+        title: string;
       } | null;
       phone?: string;
       purpose?: string;
@@ -272,8 +246,6 @@ export default function UserBookingPage() {
       .then(data => {
         if (Array.isArray(data)) {
           setRooms(data);
-          // ถ้าเข้ามาจากประวัติการจอง เช่น /Roombooking?room=113
-          // ให้เลือกห้องนั้นอัตโนมัติ
           const roomIdToSelect =
             roomParam ||
             savedBooking?.selectedRoomId ||
@@ -456,8 +428,6 @@ export default function UserBookingPage() {
       if (res.ok) {
         const data =
           await res.json();
-        // แปลง period เป็น string ให้ตรงกับหน้าแอดมินและค่า periods ด้านบน
-        // เพื่อป้องกันกรณี API ส่งกลับมาเป็น number เช่น 3 แทน "3"
         const schedules = Array.isArray(data.schedules)
           ? data.schedules.map((item: ScheduleItem) => ({
               ...item,
@@ -762,12 +732,14 @@ export default function UserBookingPage() {
   const handleSlotClick = (
     day: string,
     dateStr: string,
-    period: string
+    slot: PeriodSlot
   ) => {
-    // period 3 คือช่วงพัก 30 นาที ไม่ใช่คาบสำหรับจอง
-    if (period === "3") {
+    // ถ้าเป็นช่วงพัก 30 ไม่สามารถจองได้
+    if (!slot.dbPeriod) {
       return;
     }
+
+    const period = slot.dbPeriod;
 
     const maintenance =
       getMaintenanceForDate(
@@ -870,7 +842,6 @@ export default function UserBookingPage() {
         bookingItem.status ===
         'APPROVED';
 
-      // คำนวณข้อความแสดงสถานะจาก checkInTime และ checkOutTime
       let usageText = '<span class="text-slate-400">ยังไม่เข้าใช้งาน</span>';
       if (bookingItem.checkOutTime) {
         usageText = `<span class="text-slate-500 font-bold">⚪ ออกจากห้องแล้ว (${formatTimeTH(bookingItem.checkOutTime)} น.)</span>`;
@@ -878,7 +849,6 @@ export default function UserBookingPage() {
         usageText = `<span class="text-emerald-600 font-bold">🟢 กำลังใช้งานห้องอยู่ (เข้าห้อง ${formatTimeTH(bookingItem.checkInTime)} น.)</span>`;
       }
 
-      // นำปุ่มยกเลิกการจองออก และแสดงเพียงปุ่มตกลง/รับทราบ
       Swal.fire({
         title: isApproved
           ? 'มีการจองและอนุมัติแล้ว'
@@ -927,7 +897,8 @@ export default function UserBookingPage() {
     setTargetSlot({
       day,
       date: dateStr,
-      period
+      period,
+      title: slot.title
     });
     setIsModalOpen(true);
   };
@@ -986,7 +957,7 @@ export default function UserBookingPage() {
                 date:
                   targetSlot.date,
                 period:
-                  targetSlot.period,
+                  targetSlot.period, // ส่งคาบจริง 1, 2, 3, 4, 5, ... 9
                 purpose:
                   purpose.trim()
               })
@@ -1336,22 +1307,20 @@ export default function UserBookingPage() {
                     <th className="bg-slate-800 text-white px-2 sm:px-4 py-3.5 text-[10px] sm:text-xs font-bold w-24 sm:w-28 text-center sticky left-0 z-20">
                       วัน / คาบ
                     </th>
-                    {periods.map(
-                      (p, inx) => (
+                    {PERIOD_SLOTS.map(
+                      (slot) => (
                         <th
-                          key={p}
+                          key={slot.title + slot.time}
                           className="bg-slate-800 text-white px-2 py-3.5 text-center text-[10px] sm:text-xs font-semibold min-w-[95px]"
                         >
                           <div className="font-bold">
-                            {getPeriodTitle(
-                              p
-                            )}
+                            {slot.title}
                           </div>
                           <div className="mt-1 text-[10px] sm:text-[11px] text-slate-300 font-normal">
-                            {time[inx]}
+                            {slot.time}
                           </div>
                           <div className="mt-0.5 text-[9px] sm:text-[10px] text-slate-400 font-normal">
-                            {Shortentime[inx]}
+                            {slot.shortenTime}
                           </div>
                         </th>
                       )
@@ -1367,10 +1336,10 @@ export default function UserBookingPage() {
                           className="animate-pulse border-b border-slate-100"
                         >
                           <td className="p-2 sm:p-4 bg-slate-100 sticky left-0 z-10"></td>
-                          {periods.map(
-                            p => (
+                          {PERIOD_SLOTS.map(
+                            slot => (
                               <td
-                                key={p}
+                                key={slot.title + slot.time}
                                 className="p-1.5 sm:p-2"
                               >
                                 <div className="h-16 sm:h-18 bg-slate-100 rounded-2xl"></div>
@@ -1414,19 +1383,19 @@ export default function UserBookingPage() {
                                 )}
                               </div>
                             </td>
-                            {periods.map(
-                              p => {
+                            {PERIOD_SLOTS.map(
+                              slot => {
                                 if (
                                   maintenanceToday
                                 ) {
                                   return (
                                     <td
-                                      key={p}
+                                      key={slot.title + slot.time}
                                       onClick={() =>
                                         handleSlotClick(
                                           day,
                                           dateStr,
-                                          p
+                                          slot
                                         )
                                       }
                                       className="p-1 sm:p-1.5 text-center cursor-pointer"
@@ -1442,12 +1411,12 @@ export default function UserBookingPage() {
                                     </td>
                                   );
                                 }
-                                // period 3 = ช่วงพัก 30 นาที ไม่ใช่คาบให้จอง
-                                // แสดงเป็น "พัก 30" และกดจองไม่ได้
-                                if (p === "3") {
+
+                                // ช่องพัก 30
+                                if (!slot.dbPeriod) {
                                   return (
                                     <td
-                                      key={p}
+                                      key={slot.title + slot.time}
                                       className="p-1 sm:p-1.5 text-center"
                                     >
                                       <div className="h-16 sm:h-18 rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-100 text-slate-400 p-1 flex flex-col items-center justify-center shadow-2xs cursor-not-allowed select-none">
@@ -1459,6 +1428,7 @@ export default function UserBookingPage() {
                                   );
                                 }
 
+                                const p = slot.dbPeriod;
                                 const adminItem =
                                   getAdminSchedule(
                                     day,
@@ -1509,12 +1479,12 @@ export default function UserBookingPage() {
 
                                 return (
                                   <td
-                                    key={p}
+                                    key={slot.title + slot.time}
                                     onClick={() =>
                                       handleSlotClick(
                                         day,
                                         dateStr,
-                                        p
+                                        slot
                                       )
                                     }
                                     className="p-1 sm:p-1.5 text-center"
@@ -1570,9 +1540,7 @@ export default function UserBookingPage() {
                     {" ("}
                     {targetSlot.date}
                     {") | "}
-                    {getPeriodTitle(
-                      targetSlot.period
-                    )}
+                    {targetSlot.title}
                   </p>
                 </div>
 
