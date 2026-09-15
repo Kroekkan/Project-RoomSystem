@@ -220,7 +220,7 @@ export default function Booking_History() {
 
     try {
       const res = await fetch(
-        `${API}/bookings/${booking.id}/cancel`,
+        `/api/bookings/${booking.id}/cancel`,
         {
           method: "PATCH",
           credentials: "include",
