@@ -112,7 +112,7 @@ export function Header_Admin() {
           alt="Logo" 
           className="h-8 w-8 object-cover rounded-full" 
         />
-        <h1 className="text-white text-lg font-bold">Roomify at Udom</h1>
+        <h1 className="text-white text-lg font-bold">Roomify @ Udom</h1>
       </div>
 
       {isLoading ? (
